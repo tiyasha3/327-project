@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Join KarmoBD — Register</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="post_job.html">Post a Job</a>
+  </div>
+  <div class="nav-ctas">
+    <a href="login.html" class="btn btn-outline">Sign In</a>
+  </div>
+</nav>
+
+<!-- REGISTER FORM -->
+<div class="form-page">
+  <div class="form-card">
+
+    <div class="form-logo">
+      <div class="logo-icon" style="width:40px;height:40px;">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="logo-text" style="font-size:22px;">Karmo<span>BD</span></div>
+    </div>
+
+    <h1 class="form-title">Create your account</h1>
+    <p class="form-subtitle">Join thousands of teens earning across Bangladesh</p>
+
+    <!-- Alert -->
+    <div class="alert alert-error" id="alertBox"></div>
+    <div class="alert alert-success" id="successBox"></div>
+
+    <!-- Role Selector -->
+    <div style="margin-bottom:24px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">I want to…</label>
+      <div class="role-selector">
+        <div class="role-option selected" id="roleteen" onclick="selectRole('teen')">
+          <div class="role-icon">🎓</div>
+          <div class="role-label">Find Jobs</div>
+          <div class="role-desc">I'm a teenager</div>
+        </div>
+        <div class="role-option" id="roleemployer" onclick="selectRole('employer')">
+          <div class="role-icon">🏠</div>
+          <div class="role-label">Post Jobs</div>
+          <div class="role-desc">I'm an employer</div>
+        </div>
+      </div>
+      <input type="hidden" id="role" value="teen"/>
+    </div>
+
+    <!-- Name row -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="fname" placeholder="Rafiq" autocomplete="given-name"/>
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="lname" placeholder="Ahmed" autocomplete="family-name"/>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="rafiq@example.com" autocomplete="email"/>
+    </div>
+
+    <!-- Phone -->
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" id="phone" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+    </div>
+
+    <!-- Age — only for teens -->
+    <div class="form-group" id="ageGroup">
+      <label>Your Age</label>
+      <select id="age">
+        <option value="">Select your age</option>
+        <option>13</option><option>14</option><option>15</option><option>16</option>
+        <option>17</option><option>18</option><option>19</option>
+      </select>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password"/>
+        <button class="toggle-pw" type="button" onclick="togglePw('password',this)">👁</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="strengthLabel"></div>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="confirm" placeholder="Repeat your password" autocomplete="new-password"/>
+        <button class="toggle-pw" type="button" onclick="togglePw('confirm',this)">👁</button>
+      </div>
+    </div>
+
+    <!-- Terms -->
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:24px;">
+      <input type="checkbox" id="terms" style="margin-top:3px;accent-color:var(--green);"/>
+      <label for="terms" style="font-size:13px;color:var(--muted);cursor:pointer;">
+        I agree to the <a href="#" style="color:var(--green);">Terms of Service</a> and <a href="#" style="color:var(--green);">Privacy Policy</a>. I confirm I am 13 years or older.
+      </label>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" id="registerBtn" onclick="register()">
+      Create Account
+    </button>
+
+    <div class="form-footer">
+      Already have an account? <a href="login.html">Sign in</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+
+/* ── Pre-select role from URL param ─────────── */
+(function() {
+  const p = new URLSearchParams(location.search).get('role');
+  if (p === 'employer') selectRole('employer');
+})();
+
+function selectRole(role) {
+  document.getElementById('role').value = role;
+  document.getElementById('roleteen').classList.toggle('selected', role === 'teen');
+  document.getElementById('roleemployer').classList.toggle('selected', role === 'employer');
+  document.getElementById('ageGroup').style.display = role === 'teen' ? 'block' : 'none';
+}
+
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+/* ── Password strength ──────────────────────── */
+document.getElementById('password').addEventListener('input', function() {
+  const pw = this.value;
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  const fill = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  const colors = ['','#EF4444','#F59E0B','#3B82F6','#1E8A5E'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+  fill.style.width = (score * 25) + '%';
+  fill.style.background = colors[score] || '';
+  label.textContent = score ? labels[score] : '';
+  label.style.color = colors[score] || '';
+});
+
+/* ── Register ───────────────────────────────── */
+function showAlert(type, msg) {
+  const box = type === 'error' ? 'alertBox' : 'successBox';
+  const other = type === 'error' ? 'successBox' : 'alertBox';
+  document.getElementById(other).classList.remove('show');
+  const el = document.getElementById(box);
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function register() {
+  const fname    = document.getElementById('fname').value.trim();
+  const lname    = document.getElementById('lname').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const phone    = document.getElementById('phone').value.trim();
+  const age      = document.getElementById('age').value;
+  const password = document.getElementById('password').value;
+  const confirm  = document.getElementById('confirm').value;
+  const role     = document.getElementById('role').value;
+  const terms    = document.getElementById('terms').checked;
+
+  if (!fname || !lname) return showAlert('error', 'Please enter your full name.');
+  if (!email || !email.includes('@')) return showAlert('error', 'Please enter a valid email address.');
+  if (!phone || phone.length < 11) return showAlert('error', 'Please enter a valid 11-digit phone number.');
+  if (role === 'teen' && !age) return showAlert('error', 'Please select your age.');
+  if (password.length < 8) return showAlert('error', 'Password must be at least 8 characters.');
+  if (password !== confirm) return showAlert('error', 'Passwords do not match.');
+  if (!terms) return showAlert('error', 'Please agree to the Terms of Service to continue.');
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating account…';
+
+  const fd = new FormData();
+  fd.append('name', fname + ' ' + lname);
+  fd.append('email', email);
+  fd.append('phone', phone);
+  fd.append('password', password);
+  fd.append('age', age || 0);
+  fd.append('role', role);
+
+  fetch(API + '/register.php', { method: 'POST', body: fd, credentials: 'include' })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        showAlert('success', '🎉 Account created! Redirecting to login…');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1800);
+      } else {
+        showAlert('error', res.message || 'Registration failed. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = 'Create Account';
+      }
+    })
+    .catch(() => {
+      showAlert('error', 'Cannot connect to server. Make sure XAMPP is running.');
+      btn.disabled = false;
+      btn.innerHTML = 'Create Account';
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — KarmoBD</title>
+  <meta name="description" content="KarmoBD Admin Dashboard — manage users, jobs, and platform safety."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ── Admin-specific styles ─────────────────── */
+    body { background: #0f1c15; }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Login overlay ───────────────────────── */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: #0f1c15;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .login-box {
+      background: #1a2e20;
+      border: 1px solid rgba(30,138,94,0.3);
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 400px;
+      text-align: center;
+    }
+    .login-box .logo-text { font-family:'Sora',sans-serif; font-size:22px; font-weight:800; color:white; }
+    .login-box .logo-text span { color: var(--green-mid); }
+    .admin-badge {
+      display: inline-block;
+      background: rgba(45,184,126,0.15);
+      color: #7EFFC5;
+      font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin: 10px 0 28px;
+    }
+    .login-box input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid rgba(30,138,94,0.3);
+      border-radius: var(--radius);
+      font-size: 15px; font-family: 'DM Sans', sans-serif;
+      background: #0f1c15; color: white; outline: none;
+      margin-bottom: 14px; transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--green-mid); }
+    .login-err { color: #FC8181; font-size: 13px; margin-bottom: 10px; display: none; }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .admin-sidebar {
+      background: #152419;
+      border-right: 1px solid rgba(30,138,94,0.2);
+      padding: 28px 0;
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .sidebar-logo {
+      padding: 0 20px 28px;
+      border-bottom: 1px solid rgba(30,138,94,0.15);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo .logo-text { font-family:'Sora',sans-serif; font-size:18px; font-weight:800; color:white; }
+    .sidebar-logo .logo-text span { color: var(--green-mid); }
+    .sidebar-logo small { display:block; font-size:11px; color:rgba(255,255,255,0.4); margin-top:3px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.55);
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; border: none;
+      background: transparent; width: 100%;
+      text-align: left; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s; border-left: 3px solid transparent;
+    }
+    .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+    .nav-item.active {
+      color: #7EFFC5; background: rgba(45,184,126,0.1);
+      border-left-color: var(--green-mid); font-weight: 700;
+    }
+    .nav-item .ni-icon { font-size: 18px; flex-shrink: 0; }
+
+    .sidebar-footer {
+      margin-top: auto; padding: 16px 20px;
+      border-top: 1px solid rgba(30,138,94,0.15);
+    }
+    .logout-btn {
+      width: 100%; padding: 10px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius); color: #FC8181;
+      cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,0.2); }
+
+    /* ── Main area ───────────────────────────── */
+    .admin-main {
+      background: #0f1c15;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .admin-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .admin-header h1 { font-family:'Sora',sans-serif; font-size:24px; font-weight:800; color:white; }
+    .admin-header p  { font-size:14px; color:rgba(255,255,255,0.5); margin-top:3px; }
+
+    /* ── Stat cards ──────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .admin-stat {
+      background: #1a2e20;
+      border: 1px solid rgba(30,138,94,0.25);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+    }
+    .admin-stat .as-num   { font-family:'Sora',sans-serif; font-size:32px; font-weight:800; color:#7EFFC5; }
+    .admin-stat .as-label { font-size:12px; color:rgba(255,255,255,0.5); margin-top:4px; }
+
+    /* ── Panels ──────────────────────────────── */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* ── Table ───────────────────────────────── */
+    .admin-card {
+      background: #1a2e20;
+      border: 1px solid rgba(30,138,94,0.2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .admin-card-header {
+      padding: 16px 20px;
+      background: rgba(30,138,94,0.12);
+      border-bottom: 1px solid rgba(30,138,94,0.15);
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .admin-card-header h3 { font-size:15px; font-weight:800; color:white; flex:1; }
+
+    .admin-search {
+      padding: 8px 14px;
+      border: 1px solid rgba(30,138,94,0.3);
+      border-radius: 8px;
+      background: #0f1c15; color: white;
+      font-size: 13px; font-family: 'DM Sans', sans-serif;
+      outline: none; width: 200px;
+      transition: border-color 0.2s;
+    }
+    .admin-search:focus { border-color: var(--green-mid); }
+
+    .admin-select {
+      padding: 8px 12px;
+      border: 1px solid rgba(30,138,94,0.3);
+      border-radius: 8px;
+      background: #0f1c15; color: white;
+      font-size: 13px; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; outline: none;
+    }
+
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th {
+      padding: 12px 16px;
+      text-align: left; font-size: 11px;
+      font-weight: 700; color: rgba(255,255,255,0.45);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      border-bottom: 1px solid rgba(30,138,94,0.15);
+    }
+    .admin-table td {
+      padding: 13px 16px;
+      font-size: 13px; color: rgba(255,255,255,0.8);
+      border-bottom: 1px solid rgba(30,138,94,0.08);
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: rgba(30,138,94,0.06); }
+
+    .role-pill {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+    }
+    .role-teen     { background: rgba(30,138,94,0.2); color: #7EFFC5; }
+    .role-employer { background: rgba(245,158,11,0.2); color: #FDE68A; }
+
+    .verified-yes { color: #7EFFC5; font-weight:700; }
+    .verified-no  { color: rgba(255,255,255,0.3); }
+
+    .status-open   { color: #7EFFC5; font-weight:700; }
+    .status-closed { color: rgba(255,255,255,0.35); }
+    .status-filled { color: #FDE68A; font-weight:700; }
+
+    .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .btn-admin {
+      padding: 5px 12px; border-radius: 7px;
+      font-size: 11px; font-weight: 700;
+      cursor: pointer; border: 1px solid transparent;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .btn-verify { background: rgba(30,138,94,0.15); color:#7EFFC5; border-color:rgba(30,138,94,0.3); }
+    .btn-verify:hover { background: rgba(30,138,94,0.3); }
+    .btn-delete { background: rgba(239,68,68,0.12); color:#FC8181; border-color:rgba(239,68,68,0.25); }
+    .btn-delete:hover { background: rgba(239,68,68,0.25); }
+    .btn-unverify { background: rgba(245,158,11,0.12); color:#FDE68A; border-color:rgba(245,158,11,0.25); }
+    .btn-unverify:hover { background: rgba(245,158,11,0.25); }
+
+    .empty-table { padding: 40px; text-align:center; color:rgba(255,255,255,0.3); font-size:14px; }
+
+    @media (max-width: 768px) {
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN OVERLAY ══════════════════════════════════ -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="logo-text">Karmo<span>BD</span></div>
+    <div class="admin-badge">🔒 Admin Access Only</div>
+    <div class="login-err" id="loginErr">❌ Wrong email or password.</div>
+    <input type="email" id="adminEmail" placeholder="admin@karmobd.com" value="admin@karmobd.com"/>
+    <input type="password" id="adminPw" placeholder="Admin password" autocomplete="current-password"/>
+    <button class="btn btn-primary btn-full" style="margin-top:6px;" onclick="adminLogin()">Login to Admin Panel</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN LAYOUT ═══════════════════════════════════ -->
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Karmo<span>BD</span></div>
+      <small>Admin Dashboard</small>
+    </div>
+
+    <button class="nav-item active" onclick="showPanel('overview', this)">
+      <span class="ni-icon">📊</span> Overview
+    </button>
+    <button class="nav-item" onclick="showPanel('users', this)">
+      <span class="ni-icon">👥</span> Users
+    </button>
+    <button class="nav-item" onclick="showPanel('jobs', this)">
+      <span class="ni-icon">💼</span> Jobs
+    </button>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="adminLogout()">🚪 Log Out</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="admin-main">
+
+    <!-- ── OVERVIEW PANEL ────────────────── -->
+    <div class="admin-panel active" id="panel-overview">
+      <div class="admin-header">
+        <div>
+          <h1>📊 Platform Overview</h1>
+          <p>Live stats from the KarmoBD database</p>
+        </div>
+        <button class="btn btn-outline" style="color:rgba(255,255,255,0.6);border-color:rgba(30,138,94,0.3);" onclick="loadStats()">↻ Refresh</button>
+      </div>
+
+      <div class="stat-grid" id="statsGrid">
+        <div class="admin-stat"><div class="as-num" id="s-users">—</div><div class="as-label">Total Users</div></div>
+        <div class="admin-stat"><div class="as-num" id="s-teens">—</div><div class="as-label">Teens</div></div>
+        <div class="admin-stat"><div class="as-num" id="s-emps">—</div><div class="as-label">Employers</div></div>
+        <div class="admin-stat"><div class="as-num" id="s-jobs">—</div><div class="as-label">Jobs Posted</div></div>
+        <div class="admin-stat"><div class="as-num" id="s-open">—</div><div class="as-label">Open Jobs</div></div>
+        <div class="admin-stat"><div class="as-num" id="s-apps">—</div><div class="as-label">Applications</div></div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3>🏠 Quick Actions</h3>
+        </div>
+        <div style="padding:20px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="showPanel('users', document.querySelector('[onclick*=users]'))">Manage Users →</button>
+          <button class="btn btn-outline" style="color:rgba(255,255,255,0.7);border-color:rgba(30,138,94,0.3);" onclick="showPanel('jobs', document.querySelector('[onclick*=jobs]'))">Manage Jobs →</button>
+          <a href="../frontend/index.html" target="_blank" class="btn btn-outline" style="color:rgba(255,255,255,0.7);border-color:rgba(30,138,94,0.3);">View Site →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS PANEL ────────────────────── -->
+    <div class="admin-panel" id="panel-users">
+      <div class="admin-header">
+        <div>
+          <h1>👥 Users</h1>
+          <p>Manage all registered users</p>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3>All Users</h3>
+          <input class="admin-search" type="text" id="userSearch" placeholder="Search name or email…" oninput="loadUsers()"/>
+          <select class="admin-select" id="userRole" onchange="loadUsers()">
+            <option value="">All Roles</option>
+            <option value="teen">Teens</option>
+            <option value="employer">Employers</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Location</th><th>Verified</th><th>Joined</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="8" class="empty-table">⏳ Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── JOBS PANEL ─────────────────────── -->
+    <div class="admin-panel" id="panel-jobs">
+      <div class="admin-header">
+        <div>
+          <h1>💼 Jobs</h1>
+          <p>Moderate job listings on the platform</p>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3>All Jobs</h3>
+          <input class="admin-search" type="text" id="jobSearch" placeholder="Search title or employer…" oninput="loadJobs()"/>
+          <select class="admin-select" id="jobStatus" onchange="loadJobs()">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+            <option value="filled">Filled</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Title</th><th>Employer</th><th>Category</th><th>Salary ৳</th><th>Status</th><th>Posted</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="jobsBody">
+              <tr><td colspan="8" class="empty-table">⏳ Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+let isAdmin = false;
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(dt) {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleDateString('en-BD', { day:'numeric', month:'short', year:'numeric' });
+}
+
+/* ── Login ───────────────────────────────────── */
+function adminLogin() {
+  const em = document.getElementById('adminEmail').value.trim();
+  const pw = document.getElementById('adminPw').value;
+  const fd = new FormData();
+  fd.append('email', em);
+  fd.append('password', pw);
+  fetch(`${API}/admin.php?action=login`, { method:'POST', body:fd, credentials:'include' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        isAdmin = true;
+        document.getElementById('loginOverlay').style.display = 'none';
+        loadStats();
+        loadUsers();
+        loadJobs();
+      } else {
+        document.getElementById('loginErr').style.display = 'block';
+      }
+    })
+    .catch(() => alert('Server error. Is XAMPP running?'));
+}
+
+document.getElementById('adminPw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+function adminLogout() {
+  isAdmin = false;
+  location.reload();
+}
+
+/* ── Panel navigation ─────────────────────────── */
+function showPanel(name, btn) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ── Stats ────────────────────────────────────── */
+function loadStats() {
+  fetch(`${API}/admin.php?action=stats`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(d => {
+      if (!d.success) return;
+      document.getElementById('s-users').textContent = d.users;
+      document.getElementById('s-teens').textContent = d.teens;
+      document.getElementById('s-emps').textContent  = d.employers;
+      document.getElementById('s-jobs').textContent  = d.jobs;
+      document.getElementById('s-open').textContent  = d.open_jobs;
+      document.getElementById('s-apps').textContent  = d.applications;
+    });
+}
+
+/* ── Users ────────────────────────────────────── */
+function loadUsers() {
+  const q    = document.getElementById('userSearch').value;
+  const role = document.getElementById('userRole').value;
+  fetch(`${API}/admin.php?action=users&q=${encodeURIComponent(q)}&role=${role}`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(d => {
+      const tbody = document.getElementById('usersBody');
+      if (!d.success || !d.users.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-table">No users found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = d.users.map(u => `
+        <tr>
+          <td style="color:rgba(255,255,255,0.4);">#${u.user_id}</td>
+          <td style="font-weight:700;color:white;">${esc(u.name)}</td>
+          <td>${esc(u.email)}</td>
+          <td><span class="role-pill role-${u.role}">${u.role}</span></td>
+          <td>${esc(u.location || '—')}</td>
+          <td class="${parseInt(u.verified) ? 'verified-yes' : 'verified-no'}">${parseInt(u.verified) ? '✓ Yes' : '✗ No'}</td>
+          <td>${fmt(u.created_at)}</td>
+          <td>
+            <div class="action-btns">
+              ${parseInt(u.verified)
+                ? `<button class="btn-admin btn-unverify" onclick="toggleVerify(${u.user_id}, 0, this)">Unverify</button>`
+                : `<button class="btn-admin btn-verify"   onclick="toggleVerify(${u.user_id}, 1, this)">✓ Verify</button>`}
+              <a href="../frontend/profile.html?user_id=${u.user_id}" target="_blank" class="btn-admin btn-verify" style="text-decoration:none;">Profile</a>
+              <button class="btn-admin btn-delete" onclick="deleteUser(${u.user_id}, this)">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    });
+}
+
+function toggleVerify(id, val, btn) {
+  if (!confirm(val ? `Verify user #${id}?` : `Remove verification from user #${id}?`)) return;
+  const fd = new FormData(); fd.append('id', id); fd.append('val', val);
+  fetch(`${API}/admin.php?action=toggle_verified`, { method:'POST', body:fd, credentials:'include' })
+    .then(r => r.json()).then(d => { if (d.success) loadUsers(); else alert('Error'); });
+}
+
+function deleteUser(id, btn) {
+  if (!confirm(`⚠️ Permanently delete user #${id}? This will also delete their jobs and applications.`)) return;
+  const fd = new FormData(); fd.append('id', id);
+  fetch(`${API}/admin.php?action=delete_user`, { method:'POST', body:fd, credentials:'include' })
+    .then(r => r.json()).then(d => { if (d.success) loadUsers(); else alert('Error deleting user.'); });
+}
+
+/* ── Jobs ─────────────────────────────────────── */
+function loadJobs() {
+  const q      = document.getElementById('jobSearch').value;
+  const status = document.getElementById('jobStatus').value;
+  fetch(`${API}/admin.php?action=jobs&q=${encodeURIComponent(q)}&status=${status}`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(d => {
+      const tbody = document.getElementById('jobsBody');
+      if (!d.success || !d.jobs.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-table">No jobs found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = d.jobs.map(j => `
+        <tr>
+          <td style="color:rgba(255,255,255,0.4);">#${j.job_id}</td>
+          <td style="font-weight:700;color:white;">${esc(j.title)}</td>
+          <td>${esc(j.employer_name || '—')}</td>
+          <td>${esc(j.category || '—')}</td>
+          <td>৳ ${Number(j.salary || 0).toLocaleString()}</td>
+          <td class="status-${j.status}">${j.status}</td>
+          <td>${fmt(j.created_at)}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-admin btn-delete" onclick="deleteJob(${j.job_id}, this)">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    });
+}
+
+function deleteJob(id, btn) {
+  if (!confirm(`⚠️ Delete job #${id}? All applications for this job will also be deleted.`)) return;
+  const fd = new FormData(); fd.append('id', id);
+  fetch(`${API}/admin.php?action=delete_job`, { method:'POST', body:fd, credentials:'include' })
+    .then(r => r.json()).then(d => { if (d.success) loadJobs(); else alert('Error deleting job.'); });
+}
+</script>
+
+</body>
+</html>

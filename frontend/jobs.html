@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Browse Jobs — KarmoBD</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ── Page layout ── */
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 2rem;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── Search hero bar ── */
+    .jobs-hero {
+      background: linear-gradient(135deg, #0d4f32, #1E8A5E);
+      padding: 36px 2rem;
+    }
+    .jobs-hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .jobs-hero h1 {
+      color: white;
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .jobs-search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .jobs-search-row .search-bar {
+      flex: 1;
+      min-width: 240px;
+      box-shadow: none;
+    }
+    .jobs-search-row select {
+      padding: 0 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: white;
+      cursor: pointer;
+      outline: none;
+      min-width: 150px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 24px;
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 14px;
+    }
+    .sidebar-section { margin-bottom: 28px; }
+
+    .check-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .check-item:hover { color: var(--text); }
+    .check-item input[type="checkbox"] {
+      accent-color: var(--green);
+      width: 15px; height: 15px;
+      cursor: pointer;
+    }
+
+    .salary-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .salary-row input {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border-gray);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .salary-row input:focus {
+      border-color: var(--green);
+      background: white;
+    }
+    .salary-row span { font-size: 13px; color: var(--muted); }
+
+    /* ── Main area ── */
+    .jobs-main {}
+
+    .results-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .results-count {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .results-count strong { color: var(--text); }
+
+    .sort-select {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-gray);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: white;
+      outline: none;
+      cursor: pointer;
+    }
+    .sort-select:focus { border-color: var(--green); }
+
+    /* ── Job list (vertical cards) ── */
+    .job-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .job-list-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .job-list-card:hover {
+      border-color: var(--green);
+      box-shadow: var(--shadow);
+      transform: translateX(3px);
+    }
+    .job-list-card.featured {
+      border-color: var(--green);
+      background: #FAFFF9;
+    }
+
+    .jlc-icon {
+      width: 54px; height: 54px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .jlc-body {}
+    .jlc-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .jlc-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .jlc-meta span { margin-right: 14px; }
+    .jlc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .jlc-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .jlc-pay {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .jlc-pay-unit {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Skeleton loader ── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .skeleton-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 16px;
+    }
+
+    /* ── Apply Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      position: relative;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: var(--bg);
+      border: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: var(--border-gray); }
+
+    .modal-job-preview {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+    }
+    .modal-job-icon { font-size: 28px; }
+    .modal-job-title { font-weight: 700; font-size: 15px; }
+    .modal-job-pay { font-size: 13px; color: var(--green); font-weight: 600; }
+
+    .modal h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .modal p.sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 32px;
+    }
+    .page-btn {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-gray);
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--green); color: white; border-color: var(--green); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    @media (max-width: 768px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .job-list-card { grid-template-columns: 44px 1fr; }
+      .jlc-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════ -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html" class="active">Browse Jobs</a>
+    <a href="post_job.html">Post a Job</a>
+  </div>
+  <div class="nav-ctas" id="navCtas">
+    <a href="login.html" class="btn btn-outline">Sign In</a>
+    <a href="register.html" class="btn btn-primary">Join Free</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mobileNav">
+  <a href="jobs.html" class="active">Browse Jobs</a>
+  <a href="post_job.html">Post a Job</a>
+  <div class="mobile-divider"></div>
+  <a href="login.html">Sign In</a>
+  <a href="register.html" class="btn btn-primary" style="text-align:center;">Join Free</a>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SEARCH HERO
+════════════════════════════════════════════ -->
+<div class="jobs-hero">
+  <div class="jobs-hero-inner">
+    <h1>Find Your Next Job 🔍</h1>
+    <div class="jobs-search-row">
+      <div class="autocomplete-wrap" style="flex:1;min-width:240px;">
+        <div class="search-bar" style="box-shadow:none;">
+          <input type="text" id="searchInput" placeholder="Job title, skill, keyword…" autocomplete="off" oninput="autocompleteSearchJobs(this.value)"/>
+          <button onclick="applyFilters()">Search</button>
+        </div>
+        <div class="autocomplete-list" id="jobsAutocomplete"></div>
+      </div>
+      <select id="locationFilter" onchange="applyFilters()">
+        <option value="">📍 All Locations</option>
+        <option>Dhaka</option>
+        <option>Chittagong</option>
+        <option>Sylhet</option>
+        <option>Rajshahi</option>
+        <option>Khulna</option>
+        <option>Barisal</option>
+        <option>Rangpur</option>
+        <option>Mymensingh</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     FILTER CHIPS (mobile)
+════════════════════════════════════════════ -->
+<div style="background:var(--white);border-bottom:1px solid var(--border);padding:12px 2rem;overflow-x:auto;">
+  <div class="filter-row" style="flex-wrap:nowrap;margin-bottom:0;">
+    <button class="filter-chip active" onclick="filterCat(this,'')">All</button>
+    <button class="filter-chip" onclick="filterCat(this,'Art')">🎨 Art</button>
+    <button class="filter-chip" onclick="filterCat(this,'Teaching')">📚 Teaching</button>
+    <button class="filter-chip" onclick="filterCat(this,'Photography')">📸 Photo</button>
+    <button class="filter-chip" onclick="filterCat(this,'Tech')">💻 Tech</button>
+    <button class="filter-chip" onclick="filterCat(this,'Delivery')">🛵 Delivery</button>
+    <button class="filter-chip" onclick="filterCat(this,'Outdoor')">🌱 Outdoor</button>
+    <button class="filter-chip" onclick="filterCat(this,'Cooking')">🍳 Cooking</button>
+    <button class="filter-chip" onclick="filterCat(this,'Events')">🎪 Events</button>
+    <button class="filter-chip" onclick="filterCat(this,'Design')">🖥️ Design</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN LAYOUT
+════════════════════════════════════════════ -->
+<div class="page-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <h3>Job Type</h3>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="type" value="Flexible" checked/> Flexible</label>
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="type" value="Part-time" checked/> Part-time</label>
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="type" value="Recurring" checked/> Recurring</label>
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="type" value="Weekend" checked/> Weekends only</label>
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="type" value="1-2 days" checked/> Short project</label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Salary Range (৳)</h3>
+      <div class="salary-row">
+        <input type="number" id="salMin" placeholder="Min" onchange="applyFilters()"/>
+        <span>—</span>
+        <input type="number" id="salMax" placeholder="Max" onchange="applyFilters()"/>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Status</h3>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="status" value="open" checked/> Open</label>
+        <label class="check-item"><input type="checkbox" onchange="applyFilters()" data-filter="status" value="filled"/> Filled</label>
+      </div>
+    </div>
+
+    <button class="btn btn-outline" style="width:100%;font-size:13px;" onclick="resetFilters()">
+      Reset Filters
+    </button>
+
+  </aside>
+
+  <!-- JOBS MAIN -->
+  <main class="jobs-main">
+
+    <div class="results-bar">
+      <div class="results-count" id="resultsCount">Loading jobs…</div>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="newest">Newest first</option>
+        <option value="salary_high">Highest salary</option>
+        <option value="salary_low">Lowest salary</option>
+      </select>
+    </div>
+
+    <div class="job-list" id="jobList">
+      <!-- Skeleton loaders -->
+      <div class="skeleton-card"><div class="jlc-icon skeleton" style="width:54px;height:54px;border-radius:14px;"></div><div><div class="skeleton" style="height:18px;width:60%;margin-bottom:8px;"></div><div class="skeleton" style="height:13px;width:40%;margin-bottom:10px;"></div><div style="display:flex;gap:6px;"><div class="skeleton" style="height:22px;width:60px;border-radius:20px;"></div><div class="skeleton" style="height:22px;width:80px;border-radius:20px;"></div></div></div></div>
+      <div class="skeleton-card"><div class="jlc-icon skeleton" style="width:54px;height:54px;border-radius:14px;"></div><div><div class="skeleton" style="height:18px;width:50%;margin-bottom:8px;"></div><div class="skeleton" style="height:13px;width:35%;margin-bottom:10px;"></div><div style="display:flex;gap:6px;"><div class="skeleton" style="height:22px;width:70px;border-radius:20px;"></div><div class="skeleton" style="height:22px;width:90px;border-radius:20px;"></div></div></div></div>
+      <div class="skeleton-card"><div class="jlc-icon skeleton" style="width:54px;height:54px;border-radius:14px;"></div><div><div class="skeleton" style="height:18px;width:55%;margin-bottom:8px;"></div><div class="skeleton" style="height:13px;width:38%;margin-bottom:10px;"></div><div style="display:flex;gap:6px;"><div class="skeleton" style="height:22px;width:65px;border-radius:20px;"></div><div class="skeleton" style="height:22px;width:75px;border-radius:20px;"></div></div></div></div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APPLY MODAL
+════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="applyModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <h2>Apply for Job</h2>
+    <p class="sub">Send your application to the employer</p>
+
+    <div class="modal-job-preview" id="modalJobPreview">
+      <div class="modal-job-icon" id="modalIcon">🎨</div>
+      <div>
+        <div class="modal-job-title" id="modalTitle">Job Title</div>
+        <div class="modal-job-pay" id="modalPay">৳ 0</div>
+      </div>
+    </div>
+
+    <div class="alert alert-error" id="modalAlert"></div>
+    <div class="alert alert-success" id="modalSuccess"></div>
+
+    <div class="form-group">
+      <label>Cover Message <span style="color:var(--muted);font-weight:400;">(optional but recommended)</span></label>
+      <textarea id="applyMessage" rows="4" placeholder="Tell the employer why you're the right person for this job. Mention your skills and experience…" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-gray);border-radius:var(--radius);font-size:14px;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;background:var(--bg);color:var(--text);transition:border-color 0.2s;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" id="applyBtn" onclick="submitApplication()">
+        Submit Application ✓
+      </button>
+    </div>
+
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:14px;">
+      🛡️ The employer will review your profile and contact you.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JS
+════════════════════════════════════════════ -->
+<script>
+const API = 'http://localhost/karmobd/backend';
+
+const ICONS = {
+  'Art':'🎨','Teaching':'📚','Photography':'📸','Tech':'💻',
+  'Delivery':'🛵','Outdoor':'🌱','Cooking':'🍳','Events':'🎪',
+  'Design':'🖥️','Music':'🎵','Cleaning':'🧹','General':'💼'
+};
+const COLORS = ['#D6F5E8','#FEF3C7','#E8F4FD','#F0E8FD','#FDE8E8','#E8FDF0','#EEF5FF','#FFF3E8'];
+function iconFor(cat) { return ICONS[cat] || '💼'; }
+function colorFor(i)  { return COLORS[i % COLORS.length]; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── State ──────────────────────────────────── */
+let allJobs      = [];
+let filteredJobs = [];
+let currentCat   = '';
+let currentPage  = 1;
+const PER_PAGE   = 8;
+let selectedJob  = null;
+
+/* ── Nav session ───────────────────────────── */
+function checkSession() {
+  const name = localStorage.getItem('karmo_name');
+  const role = localStorage.getItem('karmo_role');
+  if (!name) return;
+  const dash = role === 'employer' ? 'employer_dashboard.html' : 'my_applications.html';
+  document.getElementById('navCtas').innerHTML = `
+    <span style="font-size:14px;color:var(--muted);">Hi, <strong style="color:var(--text);">${esc(name)}</strong></span>
+    <a href="${dash}" class="btn btn-primary" style="font-size:13px;">Dashboard</a>
+    <a href="#" onclick="logout()" class="btn btn-outline" style="font-size:13px;">Logout</a>`;
+}
+function logout() {
+  fetch(API+'/logout.php', { credentials: 'include' }).finally(()=>{ localStorage.clear(); location.href='index.html'; });
+}
+
+/* ── Load jobs from backend ─────────────────── */
+function loadJobs() {
+  fetch(API + '/get_jobs.php')
+    .then(r => r.json())
+    .then(jobs => {
+      allJobs = jobs;
+      applyFilters();
+    })
+    .catch(() => {
+      allJobs = PLACEHOLDER_JOBS;
+      applyFilters();
+    });
+}
+
+/* ── Placeholder (when backend not ready) ──── */
+const PLACEHOLDER_JOBS = [
+  {job_id:1,title:'Wall Mural Artist',description:'Need a talented artist to paint a colourful mural on our garden wall. All materials provided.',salary:2500,category:'Art',location:'Mirpur, Dhaka',duration:'1-2 days',status:'open',employer_name:'Karim Ahmed'},
+  {job_id:2,title:'SSC Math Tutor',description:'Looking for a sharp student to tutor my son for SSC exam preparation. 3 days a week.',salary:800,category:'Teaching',location:'Gulshan, Dhaka',duration:'Recurring',status:'open',employer_name:'Mrs. Sultana'},
+  {job_id:3,title:'Event Photographer',description:'Need a photographer for a family wedding. 6 hours of coverage required.',salary:3000,category:'Photography',location:'Dhanmondi, Dhaka',duration:'Weekend',status:'open',employer_name:'Nusrat Events'},
+  {job_id:4,title:'Parcel Delivery Rider',description:'Deliver small parcels within Motijheel area. Own bicycle preferred.',salary:150,category:'Delivery',location:'Motijheel, Dhaka',duration:'Flexible',status:'open',employer_name:'QuickShip BD'},
+  {job_id:5,title:'Social Media Manager',description:'Manage our bakery Facebook page. Post daily content. Remote friendly.',salary:4000,category:'Tech',location:'Uttara, Dhaka',duration:'Part-time',status:'open',employer_name:'Rahman Bakery'},
+  {job_id:6,title:'Garden & Lawn Helper',description:'Weekend garden maintenance. Tools provided. Bashundhara area.',salary:600,category:'Outdoor',location:'Bashundhara, Dhaka',duration:'Weekend',status:'open',employer_name:'Dr. Islam'},
+  {job_id:7,title:'Home Cook / Chef Helper',description:'Help cook for a family of 6. Lunch and dinner. Monday to Friday.',salary:5000,category:'Cooking',location:'Banani, Dhaka',duration:'Part-time',status:'open',employer_name:'Rahim Family'},
+  {job_id:8,title:'Event Setup & Decoration',description:'Help set up decorations for wedding events. Physical work required.',salary:1200,category:'Events',location:'Sylhet',duration:'1-2 days',status:'open',employer_name:'Dream Events BD'},
+  {job_id:9,title:'Poster & Flyer Designer',description:'Design promotional posters for our shop using Canva or similar tools.',salary:500,category:'Design',location:'Chittagong',duration:'Flexible',status:'open',employer_name:'Style Boutique'},
+  {job_id:10,title:'Guitar Teacher',description:'Teach basic guitar to two children aged 10 and 12. 3x per week.',salary:900,category:'Music',location:'Dhanmondi, Dhaka',duration:'Recurring',status:'open',employer_name:'Mr. Hossain'},
+];
+
+/* ── Filters ─────────────────────────────────── */
+function filterCat(btn, cat) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = cat;
+  currentPage = 1;
+  applyFilters();
+}
+
+function applyFilters() {
+  const q       = document.getElementById('searchInput').value.trim().toLowerCase();
+  const loc     = document.getElementById('locationFilter').value.toLowerCase();
+  const salMin  = parseFloat(document.getElementById('salMin').value) || 0;
+  const salMax  = parseFloat(document.getElementById('salMax').value) || Infinity;
+  const sort    = document.getElementById('sortSelect').value;
+  const durations = Array.from(document.querySelectorAll('[data-filter="type"]:checked')).map(cb => cb.value.toLowerCase());
+  const statuses  = Array.from(document.querySelectorAll('[data-filter="status"]:checked')).map(cb => cb.value.toLowerCase());
+
+  filteredJobs = allJobs.filter(j => {
+    if (currentCat && !(j.category||'').toLowerCase().includes(currentCat.toLowerCase())) return false;
+    if (loc && !(j.location||'').toLowerCase().includes(loc)) return false;
+    if (q && !(j.title+j.description+j.category).toLowerCase().includes(q)) return false;
+    if (parseFloat(j.salary) < salMin || parseFloat(j.salary) > salMax) return false;
+    if (durations.length && !durations.some(d => (j.duration||'').toLowerCase().includes(d))) return false;
+    if (statuses.length && !statuses.includes((j.status||'open').toLowerCase())) return false;
+    return true;
+  });
+
+  if (sort === 'salary_high') filteredJobs.sort((a,b) => b.salary - a.salary);
+  else if (sort === 'salary_low') filteredJobs.sort((a,b) => a.salary - b.salary);
+
+  renderPage(1);
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('locationFilter').value = '';
+  document.getElementById('salMin').value = '';
+  document.getElementById('salMax').value = '';
+  document.getElementById('sortSelect').value = 'newest';
+  document.querySelectorAll('[data-filter]').forEach(cb => cb.checked = true);
+  currentCat = '';
+  document.querySelectorAll('.filter-chip').forEach((c,i) => c.classList.toggle('active', i===0));
+  applyFilters();
+}
+
+/* ── Read URL params on load ─────────────────── */
+function readURLParams() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('q')) document.getElementById('searchInput').value = p.get('q');
+  if (p.get('cat')) {
+    currentCat = p.get('cat');
+    document.querySelectorAll('.filter-chip').forEach(c => {
+      c.classList.toggle('active', c.textContent.trim().includes(currentCat));
+    });
+  }
+}
+
+/* ── Render ──────────────────────────────────── */
+function renderPage(page) {
+  currentPage = page;
+  const total = filteredJobs.length;
+  const start = (page-1) * PER_PAGE;
+  const end   = Math.min(start + PER_PAGE, total);
+  const pageJobs = filteredJobs.slice(start, end);
+
+  document.getElementById('resultsCount').innerHTML =
+    `Showing <strong>${start+1}–${end}</strong> of <strong>${total}</strong> jobs`;
+
+  const list = document.getElementById('jobList');
+
+  if (!pageJobs.length) {
+    document.getElementById('resultsCount').innerHTML = `Showing <strong>0</strong> jobs`;
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No jobs found</h3>
+        <p>Try different keywords or remove some filters.</p>
+      </div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = pageJobs.map((job, i) => {
+    const icon  = iconFor(job.category);
+    const color = colorFor(i);
+    const pay   = Number(job.salary).toLocaleString();
+    const isNew = job.created_at && (Date.now() - new Date(job.created_at).getTime()) < 3*24*60*60*1000;
+    return `
+      <div class="job-list-card" onclick="openApply(${job.job_id})">
+        <div class="jlc-icon" style="background:${color};">${icon}</div>
+        <div class="jlc-body">
+          <div class="jlc-title">
+            ${esc(job.title)}
+            ${isNew ? '<span class="tag" style="font-size:10px;margin-left:8px;vertical-align:middle;">NEW</span>' : ''}
+          </div>
+          <div class="jlc-meta">
+            <span>🏢 ${esc(job.employer_name||'Verified Employer')}</span>
+            <span>📍 ${esc(job.location||'Bangladesh')}</span>
+            <span>⏱ ${esc(job.duration||'Flexible')}</span>
+          </div>
+          <div class="jlc-tags">
+            <span class="tag">${esc(job.category||'General')}</span>
+            <span class="tag gray">${esc(job.status||'open')}</span>
+          </div>
+        </div>
+        <div class="jlc-right">
+          <div class="jlc-pay">৳ ${pay}</div>
+          <span class="jlc-pay-unit">/ ${esc(job.duration||'project')}</span>
+          <button class="btn btn-primary" style="padding:8px 18px;font-size:13px;"
+            onclick="event.stopPropagation();openApply(${job.job_id},\`${esc(job.title)}\`,\`${pay}\`,\`${icon}\`)">
+            Apply Now
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  renderPagination(total);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / PER_PAGE);
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="page-btn${i===currentPage?' active':''}" onclick="renderPage(${i})">${i}</button>`;
+  }
+  document.getElementById('pagination').innerHTML = html;
+}
+
+/* ── Apply Modal ─────────────────────────────── */
+function openApply(jobId, title, pay, icon) {
+  // ── Auth guard: must be logged in to apply ──
+  if (!localStorage.getItem('karmo_name')) {
+    // Show modal with login prompt instead of apply form
+    const job = allJobs.find(j => j.job_id == jobId) || { job_id: jobId, title: title, salary: pay };
+    document.getElementById('modalTitle').textContent = job.title || title || 'Job';
+    document.getElementById('modalPay').textContent   = '৳ ' + Number(job.salary||pay||0).toLocaleString();
+    document.getElementById('modalIcon').textContent  = iconFor(job.category) || icon || '💼';
+    document.getElementById('applyMessage').style.display = 'none';
+    document.getElementById('applyBtn').style.display     = 'none';
+    document.getElementById('modalAlert').classList.remove('show');
+    document.getElementById('modalSuccess').classList.remove('show');
+
+    // Show login prompt
+    let loginPrompt = document.getElementById('loginPrompt');
+    if (!loginPrompt) {
+      loginPrompt = document.createElement('div');
+      loginPrompt.id = 'loginPrompt';
+      loginPrompt.style.cssText = 'text-align:center;padding:16px 0;';
+      loginPrompt.innerHTML = `
+        <div style="font-size:40px;margin-bottom:12px;">🔒</div>
+        <p style="font-size:15px;font-weight:700;margin-bottom:6px;">Sign in to Apply</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">You need a KarmoBD account to apply for jobs.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="login.html" class="btn btn-primary">Sign In →</a>
+          <a href="register.html" class="btn btn-outline">Create Free Account</a>
+        </div>`;
+      document.querySelector('.modal').appendChild(loginPrompt);
+    }
+    loginPrompt.style.display = 'block';
+
+    document.getElementById('applyModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
+  // ── Logged in — show normal apply form ──
+  if (localStorage.getItem('karmo_role') !== 'teen') {
+    document.getElementById('modalTitle').textContent = title || 'Job';
+    document.getElementById('modalPay').textContent = pay ? '৳ ' + pay : '';
+    document.getElementById('modalIcon').textContent = icon || '💼';
+    document.getElementById('applyMessage').style.display = 'none';
+    document.getElementById('applyBtn').style.display = 'none';
+    document.getElementById('modalAlert').textContent = 'Please use a teen account to apply for jobs.';
+    document.getElementById('modalAlert').classList.add('show');
+    document.getElementById('modalSuccess').classList.remove('show');
+    const lp = document.getElementById('loginPrompt');
+    if (lp) lp.style.display = 'none';
+    document.getElementById('applyModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
+
+  const job = allJobs.find(j => j.job_id == jobId) || { job_id: jobId, title: title, salary: pay };
+  selectedJob = job;
+
+  document.getElementById('modalTitle').textContent = job.title || title || 'Job';
+  document.getElementById('modalPay').textContent   = '৳ ' + Number(job.salary||pay||0).toLocaleString();
+  document.getElementById('modalIcon').textContent  = iconFor(job.category) || icon || '💼';
+  document.getElementById('applyMessage').value     = '';
+  document.getElementById('applyMessage').style.display = '';
+  document.getElementById('applyBtn').style.display     = '';
+  document.getElementById('modalAlert').classList.remove('show');
+  document.getElementById('modalSuccess').classList.remove('show');
+  document.getElementById('applyBtn').disabled = false;
+  document.getElementById('applyBtn').innerHTML = 'Submit Application ✓';
+
+  // Hide login prompt if shown before
+  const lp = document.getElementById('loginPrompt');
+  if (lp) lp.style.display = 'none';
+
+  document.getElementById('applyModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('applyModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ── Submit application ──────────────────────── */
+function submitApplication() {
+  const name = localStorage.getItem('karmo_name');
+  if (!name) {
+    document.getElementById('modalAlert').textContent = 'Please sign in first to apply for jobs.';
+    document.getElementById('modalAlert').classList.add('show');
+    setTimeout(() => { closeModal(); location.href = 'login.html'; }, 1800);
+    return;
+  }
+
+  const message = document.getElementById('applyMessage').value.trim();
+  const btn     = document.getElementById('applyBtn');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner"></span> Submitting…';
+
+  const fd = new FormData();
+  fd.append('job_id', selectedJob.job_id);
+  fd.append('message', message);
+  fd.append('user_id', localStorage.getItem('karmo_id') || 0);
+
+  fetch(API + "/apply_job.php", { method: 'POST', body: fd, credentials: 'include' })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        document.getElementById('modalSuccess').textContent = '🎉 Application submitted! The employer will review it soon.';
+        document.getElementById('modalSuccess').classList.add('show');
+        btn.innerHTML = '✓ Applied!';
+        setTimeout(closeModal, 2200);
+      } else if (res.message && (res.message.includes('already') || res.message.includes('duplicate'))) {
+        document.getElementById('modalAlert').textContent = 'You have already applied for this job.';
+        document.getElementById('modalAlert').classList.add('show');
+        btn.disabled = false; btn.innerHTML = 'Submit Application ✓';
+      } else if (res.error === 'Please login first') {
+        document.getElementById('modalAlert').textContent = 'Please sign in first to apply for jobs.';
+        document.getElementById('modalAlert').classList.add('show');
+        setTimeout(() => { closeModal(); location.href = 'login.html'; }, 1800);
+      } else {
+        document.getElementById('modalAlert').textContent = res.message || 'Something went wrong. Try again.';
+        document.getElementById('modalAlert').classList.add('show');
+        btn.disabled = false; btn.innerHTML = 'Submit Application ✓';
+      }
+    })
+    .catch(() => {
+      document.getElementById('modalAlert').textContent = 'Cannot connect to server. Make sure XAMPP is running.';
+      document.getElementById('modalAlert').classList.add('show');
+      btn.disabled = false; btn.innerHTML = 'Submit Application ✓';
+    });
+}
+
+/* ── Close modal on backdrop click ─────────── */
+document.getElementById('applyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ── Enter key search ────────────────────────── */
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyFilters();
+});
+
+/* ── Escape key closes modal ────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ── Autocomplete for jobs search ───────────── */
+function autocompleteSearchJobs(val) {
+  const list = document.getElementById('jobsAutocomplete');
+  if (!val || val.length < 2) { list.classList.remove('show'); return; }
+  const lowerVal = val.toLowerCase();
+  const matches = allJobs
+    .filter(j => j.title && j.title.toLowerCase().includes(lowerVal))
+    .slice(0, 7)
+    .map(j => `
+      <div class="autocomplete-item" onclick="selectJobSuggestion('${esc(j.title)}')">
+        <span class="ac-icon">${iconFor(j.category)}</span>
+        ${esc(j.title)}
+        <span class="ac-cat">${esc(j.category || '')}</span>
+      </div>`);
+  if (!matches.length) { list.classList.remove('show'); return; }
+  list.innerHTML = matches.join('');
+  list.classList.add('show');
+}
+
+function selectJobSuggestion(label) {
+  document.getElementById('searchInput').value = label;
+  document.getElementById('jobsAutocomplete').classList.remove('show');
+  applyFilters();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) {
+    document.querySelectorAll('.autocomplete-list').forEach(l => l.classList.remove('show'));
+  }
+});
+
+/* ── Hamburger toggle ─────────────────────────── */
+function toggleMobileNav() {
+  const nav = document.getElementById('mobileNav');
+  const btn = document.getElementById('hamburger');
+  nav.classList.toggle('show');
+  btn.classList.toggle('open');
+}
+
+checkSession();
+readURLParams();
+loadJobs();
+</script>
+
+</body>
+</html>

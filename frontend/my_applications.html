@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Applications — KarmoBD</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .dashboard-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 36px 2rem;
+    }
+
+    /* ── Welcome banner ── */
+    .welcome-banner {
+      background: linear-gradient(135deg, #0d4f32, #1E8A5E);
+      border-radius: 20px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .welcome-banner h2 { color: white; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .welcome-banner p  { color: rgba(255,255,255,0.75); font-size: 14px; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card .stat-num {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--green);
+    }
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Application card ── */
+    .app-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .app-card:hover { border-color: var(--green); box-shadow: var(--shadow); }
+
+    .app-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+
+    .app-title { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .app-meta  { font-size: 13px; color: var(--muted); }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-pending  { background: var(--amber-light); color: #92400E; }
+    .status-reviewed { background: #EEF2FF; color: #3730A3; }
+    .status-accepted { background: var(--green-light); color: var(--green-dark); }
+    .status-rejected { background: var(--red-light); color: #991B1B; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+    .tab {
+      padding: 8px 20px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .tab.active { background: var(--white); color: var(--green); font-weight: 700; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="my_applications.html" class="active">My Applications</a>
+    <a href="messages.html">Messages</a>
+    <a href="profile.html">Profile</a>
+  </div>
+  <div class="nav-ctas">
+    <span style="font-size:14px;color:var(--muted);">Hi, <strong id="navName" style="color:var(--text);">—</strong></span>
+    <a href="#" onclick="logout()" class="btn btn-outline">Logout</a>
+  </div>
+</nav>
+
+<div class="dashboard-wrap">
+
+  <!-- Welcome banner -->
+  <div class="welcome-banner">
+    <div>
+      <h2>Welcome back, <span id="heroName">—</span>! 👋</h2>
+      <p>Here are all the jobs you've applied for. Keep applying — more opportunities every day!</p>
+    </div>
+    <a href="jobs.html" class="btn btn-white btn-lg">Browse More Jobs →</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-num" id="statTotal">–</div><div class="stat-label">Total Applied</div></div>
+    <div class="stat-card"><div class="stat-num" id="statPending" style="color:var(--amber);">–</div><div class="stat-label">Pending Review</div></div>
+    <div class="stat-card"><div class="stat-num" id="statAccepted" style="color:var(--green);">–</div><div class="stat-label">Accepted</div></div>
+    <div class="stat-card"><div class="stat-num" id="statReviewed" style="color:#3730A3;">–</div><div class="stat-label">Being Reviewed</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="filterTab(this,'all')">All</button>
+    <button class="tab" onclick="filterTab(this,'pending')">Pending</button>
+    <button class="tab" onclick="filterTab(this,'reviewed')">Reviewed</button>
+    <button class="tab" onclick="filterTab(this,'accepted')">Accepted</button>
+    <button class="tab" onclick="filterTab(this,'rejected')">Rejected</button>
+  </div>
+
+  <!-- Applications list -->
+  <div id="appList">
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+      <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+      Loading your applications…
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+const ICONS = { 'Art':'🎨','Teaching':'📚','Photography':'📸','Tech':'💻','Delivery':'🛵','Outdoor':'🌱','Cooking':'🍳','Events':'🎪','Design':'🖥️','Music':'🎵','General':'💼' };
+const COLORS = ['#D6F5E8','#FEF3C7','#E8F4FD','#F0E8FD','#FDE8E8','#E8FDF0'];
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function iconFor(cat){ return ICONS[cat]||'💼'; }
+
+let allApps  = [];
+let activeTab = 'all';
+
+/* ── Auth check ─────────────────────────── */
+const name = localStorage.getItem('karmo_name');
+if (!name) { location.href = 'login.html'; }
+if (localStorage.getItem('karmo_role') === 'employer') { location.href = 'employer_dashboard.html'; }
+document.getElementById('navName').textContent  = name || '—';
+document.getElementById('heroName').textContent = name ? name.split(' ')[0] : '—';
+
+function logout() {
+  fetch(API+'/logout.php', { credentials: 'include' }).finally(()=>{ localStorage.clear(); location.href='index.html'; });
+}
+
+/* ── Load applications ───────────────────── */
+function loadApps() {
+  const uid = localStorage.getItem('karmo_id') || 0;
+  fetch(API + `/my_applications.php?user_id=${uid}`, { credentials: "include" })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.error) {
+        document.getElementById('appList').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔒</div>
+            <h3>Session expired</h3>
+            <p>Please <a href="login.html" style="color:var(--green);">sign in again</a>.</p>
+          </div>`;
+        return;
+      }
+      allApps = Array.isArray(data) ? data : [];
+      updateStats(allApps);
+      renderApps(allApps);
+    })
+    .catch(() => {
+      document.getElementById('appList').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Could not connect to server</h3>
+          <p>Make sure XAMPP Apache and MySQL are both running.</p>
+        </div>`;
+    });
+}
+
+function updateStats(data) {
+  document.getElementById('statTotal').textContent    = data.length;
+  document.getElementById('statPending').textContent  = data.filter(a=>a.status==='pending').length;
+  document.getElementById('statAccepted').textContent = data.filter(a=>a.status==='accepted').length;
+  document.getElementById('statReviewed').textContent = data.filter(a=>a.status==='reviewed').length;
+}
+
+function filterTab(btn, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  activeTab = tab;
+  const filtered = tab === 'all' ? allApps : allApps.filter(a => a.status === tab);
+  renderApps(filtered);
+}
+
+function renderApps(apps) {
+  const list = document.getElementById('appList');
+  if (!apps.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No applications yet</h3>
+        <p>Start applying to jobs and they'll show up here!</p>
+        <a href="jobs.html" class="btn btn-primary" style="margin-top:20px;">Browse Jobs →</a>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = apps.map((app, i) => {
+    const icon  = iconFor(app.category);
+    const color = COLORS[i % COLORS.length];
+    const statusMap = {
+      pending:  { label:'Pending Review', cls:'status-pending',  dot:'🟡' },
+      reviewed: { label:'Being Reviewed', cls:'status-reviewed', dot:'🔵' },
+      accepted: { label:'Accepted!',      cls:'status-accepted', dot:'🟢' },
+      rejected: { label:'Not Selected',   cls:'status-rejected', dot:'🔴' },
+    };
+    const s = statusMap[app.status] || statusMap['pending'];
+
+    return `
+      <div class="app-card">
+        <div class="app-icon" style="background:${color};">${icon}</div>
+        <div>
+          <div class="app-title">${esc(app.title)}</div>
+          <div class="app-meta">
+            ৳ ${Number(app.salary||0).toLocaleString()} &nbsp;·&nbsp;
+            ${esc(app.location||'Bangladesh')} &nbsp;·&nbsp;
+            Applied ${app.applied_at ? formatDate(app.applied_at) : 'recently'}
+          </div>
+          ${app.status === 'accepted' ? `
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="messages.html?with=${app.employer_id}&job_id=${app.job_id}" class="btn btn-primary" style="padding:6px 14px;font-size:12px;">💬 Message Employer</a>
+            <a href="profile.html?user_id=${app.employer_id}&job_id=${app.job_id}" class="btn btn-outline" style="padding:6px 14px;font-size:12px;">⭐ Rate Employer</a>
+          </div>` : ''}
+        </div>
+        <div>
+          <span class="status-badge ${s.cls}">${s.dot} ${s.label}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function formatDate(d) {
+  const date = new Date(d);
+  const now  = new Date();
+  const diff = Math.floor((now - date) / (1000*60*60*24));
+  if (diff === 0) return 'today';
+  if (diff === 1) return 'yesterday';
+  if (diff < 7)  return diff + ' days ago';
+  return date.toLocaleDateString('en-BD', { day:'numeric', month:'short' });
+}
+
+loadApps();
+</script>
+
+</body>
+</html>

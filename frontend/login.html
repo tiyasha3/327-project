@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — KarmoBD</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+  </div>
+  <div class="nav-ctas">
+    <a href="register.html" class="btn btn-primary">Join Free</a>
+  </div>
+</nav>
+
+<!-- LOGIN FORM -->
+<div class="form-page">
+  <div class="form-card">
+
+    <div class="form-logo">
+      <div class="logo-icon" style="width:40px;height:40px;">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="logo-text" style="font-size:22px;">Karmo<span>BD</span></div>
+    </div>
+
+    <h1 class="form-title">Welcome back!</h1>
+    <p class="form-subtitle">Sign in to find jobs, track applications, and more</p>
+
+    <!-- Alerts -->
+    <div class="alert alert-error" id="alertBox"></div>
+    <div class="alert alert-success" id="successBox"></div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com" autocomplete="email"/>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label>
+        Password
+        <a href="#" style="float:right;font-size:12px;color:var(--green);font-weight:500;">Forgot password?</a>
+      </label>
+      <div class="input-wrapper">
+        <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
+        <button class="toggle-pw" type="button" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+
+    <!-- Remember me -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;">
+      <input type="checkbox" id="remember" style="accent-color:var(--green);"/>
+      <label for="remember" style="font-size:13px;color:var(--muted);cursor:pointer;">Keep me signed in</label>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" id="loginBtn" onclick="login()">
+      Sign In
+    </button>
+
+    <div class="divider">or</div>
+
+    <!-- Quick demo buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;">
+      <button class="btn btn-outline" onclick="demoLogin('teen')" style="font-size:13px;">
+        🎓 Demo as Teen
+      </button>
+      <button class="btn btn-outline" onclick="demoLogin('employer')" style="font-size:13px;">
+        🏠 Demo as Employer
+      </button>
+    </div>
+
+    <div class="form-footer">
+      Don't have an account? <a href="register.html">Create one free</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+
+function togglePw() {
+  const inp = document.getElementById('password');
+  const btn = document.querySelector('.toggle-pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function showAlert(type, msg) {
+  const box = type === 'error' ? 'alertBox' : 'successBox';
+  const other = type === 'error' ? 'successBox' : 'alertBox';
+  document.getElementById(other).classList.remove('show');
+  const el = document.getElementById(box);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function login() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email) return showAlert('error', 'Please enter your email address.');
+  if (!password) return showAlert('error', 'Please enter your password.');
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+  const fd = new FormData();
+  fd.append('email', email);
+  fd.append('password', password);
+
+  fetch(API + '/login.php', { method: 'POST', body: fd, credentials: 'include' })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        localStorage.setItem('karmo_name', res.name);
+        localStorage.setItem('karmo_role', res.role);
+        localStorage.setItem('karmo_id', res.user_id);
+        showAlert('success', '✅ Logged in! Redirecting…');
+        const redir = sessionStorage.getItem('loginRedirect');
+        sessionStorage.removeItem('loginRedirect');
+        setTimeout(() => {
+          window.location.href = redir || (res.role === 'employer' ? 'employer_dashboard.html' : 'my_applications.html');
+        }, 900);
+      } else {
+        showAlert('error', res.message || 'Invalid email or password. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+      }
+    })
+    .catch(() => {
+      showAlert('error', 'Cannot connect to server. Make sure XAMPP is running.');
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+    });
+}
+
+/* ── Demo login (fills credentials automatically) */
+function demoLogin(role) {
+  if (role === 'teen') {
+    document.getElementById('email').value = 'demo.teen@karmobd.com';
+    document.getElementById('password').value = 'demo1234';
+  } else {
+    document.getElementById('email').value = 'demo.employer@karmobd.com';
+    document.getElementById('password').value = 'demo1234';
+  }
+  showAlert('success', `Demo credentials filled! Click Sign In to continue.`);
+}
+
+/* ── Show redirect message if any ─────────── */
+const _redirectMsg = sessionStorage.getItem('loginMessage');
+if (_redirectMsg) {
+  showAlert('error', _redirectMsg);
+  sessionStorage.removeItem('loginMessage');
+}
+
+/* ── Enter key support ─────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+/* ── Already logged in? ────────────────────────── */
+if (localStorage.getItem('karmo_name')) {
+  const role = localStorage.getItem('karmo_role');
+  const redir = sessionStorage.getItem('loginRedirect');
+  sessionStorage.removeItem('loginRedirect');
+  window.location.href = redir || (role === 'employer' ? 'employer_dashboard.html' : 'my_applications.html');
+}
+</script>
+
+</body>
+</html>

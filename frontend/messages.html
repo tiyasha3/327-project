@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messages — KarmoBD</title>
+  <meta name="description" content="Chat with employers and teens directly on KarmoBD — Bangladesh's teen job platform."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ── Layout ─────────────────────────────── */
+    .msg-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 2rem;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      height: calc(100vh - 64px);
+    }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .inbox-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .inbox-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .inbox-header h2 {
+      font-size: 17px;
+      font-weight: 800;
+      flex: 1;
+    }
+
+    .unread-badge {
+      background: var(--green);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .convo-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .convo-item {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-gray);
+      transition: background 0.15s;
+      position: relative;
+    }
+    .convo-item:hover   { background: var(--bg); }
+    .convo-item.active  { background: var(--green-light); }
+    .convo-item.unread  .convo-name { font-weight: 800; color: var(--text); }
+    .convo-item.unread  .convo-preview { color: var(--text); font-weight: 600; }
+
+    .convo-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; color: white; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .convo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .convo-name    { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .convo-job     { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 3px; }
+    .convo-preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .convo-time    { font-size: 11px; color: var(--muted); position: absolute; top: 14px; right: 14px; }
+
+    .unread-dot {
+      position: absolute;
+      right: 14px; bottom: 14px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* ── Chat panel ──────────────────────────── */
+    .chat-panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .chat-header-info h3 { font-size: 16px; font-weight: 800; }
+    .chat-header-info p  { font-size: 12px; color: var(--muted); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--bg);
+    }
+
+    .msg-bubble {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 72%;
+    }
+    .msg-bubble.mine {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .bubble-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .bubble-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .bubble-text {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px 14px 14px 4px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .msg-bubble.mine .bubble-text {
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 14px 14px 4px 14px;
+    }
+
+    .bubble-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+    .msg-bubble.mine .bubble-time { text-align: left; }
+
+    /* ── Chat input ──────────────────────────── */
+    .chat-input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .chat-input-area textarea {
+      flex: 1;
+      resize: none;
+      border: 1.5px solid var(--border-gray);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      max-height: 120px;
+      background: var(--bg);
+      transition: border-color 0.2s;
+    }
+    .chat-input-area textarea:focus { border-color: var(--green); background: white; }
+
+    .send-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--green);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .send-btn:hover  { background: var(--green-dark); transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.95); }
+
+    /* ── Empty / placeholder states ──────────── */
+    .empty-chat {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px;
+    }
+    .empty-chat .ec-icon { font-size: 52px; margin-bottom: 4px; }
+    .empty-chat h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+    .empty-chat p  { font-size: 14px; }
+
+    .day-divider {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .day-divider::before, .day-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-gray);
+    }
+
+    @media (max-width: 720px) {
+      .msg-layout { grid-template-columns: 1fr; height: auto; }
+      .inbox-panel { max-height: 280px; }
+      .chat-panel  { min-height: 500px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+    <a id="teenLink" href="my_applications.html">My Applications</a>
+    <a id="postLink" href="post_job.html">Post a Job</a>
+    <a id="empLink"  href="employer_dashboard.html">Dashboard</a>
+    <a href="messages.html" class="active">Messages</a>
+    <a href="profile.html">Profile</a>
+  </div>
+  <div class="nav-ctas">
+    <span style="font-size:14px;color:var(--muted);">Hi, <strong id="navName" style="color:var(--text);">—</strong></span>
+    <a href="#" onclick="logout()" class="btn btn-outline">Logout</a>
+  </div>
+</nav>
+
+<div class="msg-layout">
+
+  <!-- ── INBOX SIDEBAR ───────────────────── -->
+  <div class="inbox-panel">
+    <div class="inbox-header">
+      <h2>💬 Inbox</h2>
+      <span class="unread-badge hidden" id="unreadBadge">0</span>
+    </div>
+    <div class="convo-list" id="convoList">
+      <div style="padding:30px;text-align:center;color:var(--muted);">
+        <div style="font-size:28px;margin-bottom:10px;">⏳</div>
+        Loading conversations…
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHAT PANEL ─────────────────────── -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="empty-chat" id="emptyChat">
+      <div class="ec-icon">💬</div>
+      <h3>Select a Conversation</h3>
+      <p>Choose a conversation from the left to start chatting.</p>
+    </div>
+
+    <!-- chat header (hidden until convo selected) -->
+    <div class="chat-header hidden" id="chatHeader">
+      <div class="convo-avatar" id="chatAvatar" style="background:var(--green);width:42px;height:42px;font-size:15px;"></div>
+      <div class="chat-header-info">
+        <h3 id="chatName">—</h3>
+        <p id="chatJobTitle">—</p>
+      </div>
+      <a id="viewProfileLink" href="#" class="btn btn-outline" style="margin-left:auto;font-size:12px;padding:6px 14px;">View Profile</a>
+    </div>
+
+    <!-- messages area (hidden until convo selected) -->
+    <div class="chat-messages hidden" id="chatMessages"></div>
+
+    <!-- input area (hidden until convo selected) -->
+    <div class="chat-input-area hidden" id="chatInputArea">
+      <textarea id="msgInput" rows="1" placeholder="Type a message… (Enter to send, Shift+Enter for new line)" maxlength="2000"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send message">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+const AV_COLORS = ['#1E8A5E','#7C3AED','#D97706','#DC2626','#2563EB','#0891B2','#059669','#9333EA'];
+
+/* ── Auth ─────────────────────────────────────── */
+const myName = localStorage.getItem('karmo_name');
+const myRole = localStorage.getItem('karmo_role');
+const myId   = localStorage.getItem('karmo_id');
+if (!myName) { location.href = 'login.html'; }
+document.getElementById('navName').textContent = myName || '—';
+
+// Show/hide role-specific nav links
+if (myRole === 'teen') {
+  document.getElementById('postLink').style.display = 'none';
+  document.getElementById('empLink').style.display  = 'none';
+} else {
+  document.getElementById('teenLink').style.display = 'none';
+}
+
+function logout() {
+  fetch(API + '/logout.php', { credentials: 'include' }).finally(() => {
+    localStorage.clear();
+    location.href = 'index.html';
+  });
+}
+
+/* ── Helpers ──────────────────────────────────── */
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function initials(name) {
+  return String(name || '?').split(' ').map(w => w[0] || '').join('').slice(0,2).toUpperCase();
+}
+function avatarHtml(avatar, name, size) {
+  if (avatar) return `<img src="${esc(avatar)}" alt="${esc(name)}">`;
+  return initials(name);
+}
+function avColor(id) { return AV_COLORS[Math.abs(parseInt(id) || 0) % AV_COLORS.length]; }
+
+function formatTime(dt) {
+  if (!dt) return '';
+  const d = new Date(dt);
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  if (isToday) return d.toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('en-BD', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDay(dt) {
+  if (!dt) return '';
+  const d = new Date(dt);
+  const now = new Date();
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === now.toDateString()) return 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-BD', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+/* ── Active conversation state ────────────────── */
+let activeWith   = null;
+let activeJobId  = null;
+let pollInterval = null;
+
+/* ── Load conversations ───────────────────────── */
+function loadConversations() {
+  fetch(`${API}/get_conversations.php`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) {
+        document.getElementById('convoList').innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);">Please sign in to see messages.</div>`;
+        return;
+      }
+      const convos = data.conversations || [];
+      const totalUnread = convos.reduce((s, c) => s + (parseInt(c.unread_count) || 0), 0);
+
+      const badge = document.getElementById('unreadBadge');
+      if (totalUnread > 0) {
+        badge.textContent = totalUnread;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (!convos.length) {
+        document.getElementById('convoList').innerHTML = `
+          <div style="padding:40px 20px;text-align:center;color:var(--muted);">
+            <div style="font-size:36px;margin-bottom:12px;">💬</div>
+            <p style="font-size:14px;">No conversations yet.<br>Messages appear here after an employer accepts your application.</p>
+          </div>`;
+        return;
+      }
+
+      // Check URL params for auto-open
+      const params = new URLSearchParams(location.search);
+      const openWith  = params.get('with');
+      const openJobId = params.get('job_id');
+
+      document.getElementById('convoList').innerHTML = convos.map((c, i) => {
+        const isActive  = (String(c.other_id) === String(activeWith) && String(c.job_id) === String(activeJobId));
+        const hasUnread = parseInt(c.unread_count) > 0;
+        return `
+          <div class="convo-item ${isActive ? 'active' : ''} ${hasUnread ? 'unread' : ''}"
+               id="convo-${c.other_id}-${c.job_id}"
+               onclick="openChat('${c.other_id}','${c.job_id}','${esc(c.other_name)}','${esc(c.other_avatar||'')}','${esc(c.job_title)}')">
+            <div class="convo-avatar" style="background:${avColor(c.other_id)};">
+              ${avatarHtml(c.other_avatar, c.other_name)}
+            </div>
+            <div style="min-width:0;">
+              <div class="convo-name">${esc(c.other_name)}</div>
+              <div class="convo-job">📌 ${esc(c.job_title)}</div>
+              <div class="convo-preview">${esc(c.last_message || 'Start the conversation!')}</div>
+            </div>
+            <span class="convo-time">${formatTime(c.last_time)}</span>
+            ${hasUnread ? '<div class="unread-dot"></div>' : ''}
+          </div>`;
+      }).join('');
+
+      // Auto-open if URL params given
+      if (openWith && openJobId && !activeWith) {
+        const match = convos.find(c => String(c.other_id) === openWith && String(c.job_id) === openJobId);
+        if (match) openChat(match.other_id, match.job_id, match.other_name, match.other_avatar || '', match.job_title);
+      }
+    })
+    .catch(() => {
+      document.getElementById('convoList').innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);">⚠️ Could not load. Check XAMPP.</div>`;
+    });
+}
+
+/* ── Open a chat ─────────────────────────────── */
+function openChat(otherId, jobId, otherName, otherAvatar, jobTitle) {
+  activeWith  = otherId;
+  activeJobId = jobId;
+
+  // Update sidebar active state
+  document.querySelectorAll('.convo-item').forEach(el => el.classList.remove('active'));
+  const item = document.getElementById(`convo-${otherId}-${jobId}`);
+  if (item) { item.classList.add('active'); item.classList.remove('unread'); item.querySelector('.unread-dot')?.remove(); }
+
+  // Show UI elements
+  document.getElementById('emptyChat').classList.add('hidden');
+  document.getElementById('chatHeader').classList.remove('hidden');
+  document.getElementById('chatMessages').classList.remove('hidden');
+  document.getElementById('chatInputArea').classList.remove('hidden');
+
+  // Set header info
+  const av = document.getElementById('chatAvatar');
+  av.style.background = avColor(otherId);
+  av.innerHTML = avatarHtml(otherAvatar, otherName);
+  document.getElementById('chatName').textContent     = otherName;
+  document.getElementById('chatJobTitle').textContent = '📌 ' + jobTitle;
+  document.getElementById('viewProfileLink').href     = `profile.html?user_id=${otherId}`;
+
+  // Focus input
+  document.getElementById('msgInput').focus();
+
+  // Load messages & start polling
+  loadMessages();
+  clearInterval(pollInterval);
+  pollInterval = setInterval(loadMessages, 5000);
+}
+
+/* ── Load messages ───────────────────────────── */
+function loadMessages() {
+  if (!activeWith || !activeJobId) return;
+  fetch(`${API}/get_messages.php?with=${activeWith}&job_id=${activeJobId}`, { credentials: 'include' })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      renderMessages(data.messages, parseInt(data.me));
+    });
+}
+
+function renderMessages(msgs, meId) {
+  const container = document.getElementById('chatMessages');
+  const wasBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
+
+  let html = '';
+  let lastDay = '';
+  msgs.forEach(msg => {
+    const day = formatDay(msg.sent_at);
+    if (day !== lastDay) {
+      html += `<div class="day-divider">${day}</div>`;
+      lastDay = day;
+    }
+    const isMine = parseInt(msg.sender_id) === meId;
+    html += `
+      <div class="msg-bubble ${isMine ? 'mine' : ''}">
+        ${!isMine ? `<div class="bubble-avatar" style="background:${avColor(msg.sender_id)};">${avatarHtml(msg.sender_avatar, msg.sender_name)}</div>` : ''}
+        <div>
+          <div class="bubble-text">${esc(msg.content).replace(/\n/g, '<br>')}</div>
+          <div class="bubble-time">${formatTime(msg.sent_at)}</div>
+        </div>
+        ${isMine ? `<div class="bubble-avatar" style="background:${avColor(msg.sender_id)};">${avatarHtml(msg.sender_avatar, msg.sender_name)}</div>` : ''}
+      </div>`;
+  });
+
+  if (!msgs.length) {
+    html = `<div style="text-align:center;color:var(--muted);padding:40px 20px;">
+      <div style="font-size:40px;margin-bottom:12px;">👋</div>
+      <p>No messages yet. Say hello!</p>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+  if (wasBottom || msgs.length === 0) container.scrollTop = container.scrollHeight;
+}
+
+/* ── Send message ────────────────────────────── */
+function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const content = input.value.trim();
+  if (!content || !activeWith || !activeJobId) return;
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('receiver_id', activeWith);
+  fd.append('job_id', activeJobId);
+  fd.append('content', content);
+
+  fetch(`${API}/send_message.php`, { method: 'POST', body: fd, credentials: 'include' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        input.value = '';
+        input.style.height = 'auto';
+        loadMessages();
+        loadConversations();
+      } else {
+        alert(data.error === 'not_authorized' ? 'You can only message users connected through a job application.' : 'Could not send message. Please try again.');
+      }
+    })
+    .catch(() => alert('Server error. Check XAMPP is running.'))
+    .finally(() => { btn.disabled = false; });
+}
+
+/* ── Auto-resize textarea ────────────────────── */
+document.getElementById('msgInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+/* ── Enter to send ───────────────────────────── */
+document.getElementById('msgInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+/* ── Init ────────────────────────────────────── */
+loadConversations();
+// Refresh inbox every 15s
+setInterval(loadConversations, 15000);
+</script>
+
+</body>
+</html>

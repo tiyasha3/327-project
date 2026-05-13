@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  <title>Post a Job — KarmoBD</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <!-- AUTH GUARD: runs before page renders -->
+  <script>
+    (function() {
+      var name = localStorage.getItem('karmo_name');
+      var role = localStorage.getItem('karmo_role');
+      if (!name) {
+        sessionStorage.setItem('loginRedirect', 'post_job.html');
+        sessionStorage.setItem('loginMessage', '\ud83d\udd12 Please sign in as an employer to post a job.');
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+  <style>
+    .post-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 2rem;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── Page hero ── */
+    .post-hero {
+      background: linear-gradient(135deg, #0d4f32, #1E8A5E);
+      padding: 36px 2rem;
+    }
+    .post-hero-inner { max-width: 1100px; margin: 0 auto; }
+    .post-hero h1 { color: white; font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .post-hero p  { color: rgba(255,255,255,0.75); font-size: 15px; }
+
+    /* ── Form card ── */
+    .post-form-card {
+      background: var(--white);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 36px;
+    }
+
+    .post-form-card h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-gray);
+      color: var(--text);
+    }
+
+    .char-count {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .tips-box {
+      background: var(--green-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--green-dark);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .tips-box .tip-icon { font-size: 18px; flex-shrink: 0; }
+
+    /* ── Preview card (right sidebar) ── */
+    .preview-wrap { position: sticky; top: 84px; }
+
+    .preview-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .preview-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--green);
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .preview-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .preview-icon {
+      width: 50px; height: 50px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      background: var(--green-light);
+    }
+    .preview-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: var(--text);
+    }
+    .preview-poster { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .preview-tags   { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .preview-footer { display: flex; align-items: center; justify-content: space-between; }
+    .preview-pay {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--green);
+    }
+    .preview-pay span { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+    .preview-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 14px;
+      border-top: 1px solid var(--border-gray);
+      padding-top: 12px;
+    }
+
+    /* ── Checklist ── */
+    .checklist { display: flex; flex-direction: column; gap: 8px; }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .check-row .ck {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border-gray);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .check-row.done .ck { background: var(--green); border-color: var(--green); color: white; }
+    .check-row.done    { color: var(--text); }
+
+    /* ── Category grid ── */
+    .cat-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .cat-btn {
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-gray);
+      background: var(--bg);
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      color: var(--muted);
+    }
+    .cat-btn:hover  { border-color: var(--green); color: var(--green); }
+    .cat-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green); }
+    .cat-btn .cat-em { display: block; font-size: 20px; margin-bottom: 4px; }
+
+    /* ── Success screen ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 48px 20px;
+    }
+    .success-screen.show { display: block; }
+    .success-icon { font-size: 64px; margin-bottom: 20px; }
+    .success-screen h2 { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
+    .success-screen p  { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+
+    @media (max-width: 900px) {
+      .post-wrap { grid-template-columns: 1fr; }
+      .preview-wrap { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="post_job.html" class="active">Post a Job</a>
+    <a href="employer_dashboard.html">Dashboard</a>
+  </div>
+  <div class="nav-ctas" id="navCtas">
+    <a href="login.html" class="btn btn-outline">Sign In</a>
+    <a href="register.html?role=employer" class="btn btn-primary">Join Free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="post-hero">
+  <div class="post-hero-inner">
+    <h1>Post a Job 📋</h1>
+    <p>Reach thousands of talented teenagers across Bangladesh. It's free and takes 2 minutes.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="post-wrap">
+
+  <!-- ═══ LEFT — FORM ═══ -->
+  <div>
+    <div class="post-form-card" id="formCard">
+
+      <div class="tips-box">
+        <span class="tip-icon">💡</span>
+        <div><strong>Tips for a great post:</strong> Be specific about the task, location, and pay. Teens apply more when they know exactly what to expect.</div>
+      </div>
+
+      <h2>Job Details</h2>
+
+      <div class="alert alert-error" id="alertBox"></div>
+      <div class="alert alert-success" id="successAlert"></div>
+
+      <!-- Job Title -->
+      <div class="form-group">
+        <label>Job Title <span style="color:var(--red);">*</span></label>
+        <input type="text" id="title" maxlength="100"
+          placeholder="e.g. Wall Mural Artist, Math Tutor, Event Photographer"
+          oninput="updatePreview()"/>
+        <div class="char-count"><span id="titleCount">0</span>/100</div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label>Category <span style="color:var(--red);">*</span></label>
+        <input type="hidden" id="category" value=""/>
+        <div class="cat-picker">
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Art')"><span class="cat-em">🎨</span>Art & Murals</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Teaching')"><span class="cat-em">📚</span>Teaching</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Photography')"><span class="cat-em">📸</span>Photography</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Tech')"><span class="cat-em">💻</span>Tech Help</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Delivery')"><span class="cat-em">🛵</span>Delivery</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Cooking')"><span class="cat-em">🍳</span>Cooking</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Outdoor')"><span class="cat-em">🌱</span>Gardening</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Events')"><span class="cat-em">🎪</span>Events</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Design')"><span class="cat-em">🖥️</span>Graphic Design</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Music')"><span class="cat-em">🎵</span>Music</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'Cleaning')"><span class="cat-em">🧹</span>Cleaning</button>
+          <button type="button" class="cat-btn" onclick="selectCat(this,'General')"><span class="cat-em">💼</span>Other</button>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group" style="margin-top:20px;">
+        <label>Job Description <span style="color:var(--red);">*</span></label>
+        <textarea id="description" rows="5" maxlength="1000"
+          placeholder="Describe the task clearly. What needs to be done? When? What skills are needed? What will you provide (tools, materials)?"
+          oninput="updatePreview()" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-gray);border-radius:var(--radius);font-size:14px;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;background:var(--bg);color:var(--text);transition:border-color 0.2s;line-height:1.6;"></textarea>
+        <div class="char-count"><span id="descCount">0</span>/1000</div>
+      </div>
+
+      <!-- Salary & Duration -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pay Amount (৳) <span style="color:var(--red);">*</span></label>
+          <input type="number" id="salary" min="0" placeholder="e.g. 2500" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <label>Pay Type</label>
+          <select id="paytype" onchange="updatePreview()">
+            <option value="project">Per project</option>
+            <option value="hour">Per hour</option>
+            <option value="day">Per day</option>
+            <option value="month">Per month</option>
+            <option value="delivery">Per delivery</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Location & Duration -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Location <span style="color:var(--red);">*</span></label>
+          <input type="text" id="location" placeholder="e.g. Mirpur, Dhaka" oninput="updatePreview()"/>
+        </div>
+        <div class="form-group">
+          <label>Duration / Schedule</label>
+          <select id="duration" onchange="updatePreview()">
+            <option value="Flexible">Flexible</option>
+            <option value="1-2 days">1–2 days</option>
+            <option value="Weekend">Weekends</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Recurring">Recurring</option>
+            <option value="Full day">Full day</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Contact info -->
+      <div class="form-group">
+        <label>Your Phone Number (for applicants)</label>
+        <input type="tel" id="phone" placeholder="01XXXXXXXXX"/>
+      </div>
+
+      <!-- Requirements -->
+      <div class="form-group">
+        <label>Requirements <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+        <input type="text" id="requirements"
+          placeholder="e.g. Must have own bicycle, Must be punctual, Experience preferred"/>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="resetForm()">Clear Form</button>
+        <button class="btn btn-primary btn-lg" style="flex:2;" id="postBtn" onclick="postJob()">
+          Post Job Now 🚀
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Success screen (shown after posting) -->
+    <div class="post-form-card success-screen" id="successScreen">
+      <div class="success-icon">🎉</div>
+      <h2>Job Posted Successfully!</h2>
+      <p>Your job is now live. Teenagers across Bangladesh can see and apply for it right now.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="employer_dashboard.html" class="btn btn-primary btn-lg">View Applications →</a>
+        <button class="btn btn-outline btn-lg" onclick="postAnother()">Post Another Job</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT — PREVIEW + CHECKLIST ═══ -->
+  <div class="preview-wrap">
+
+    <div class="preview-label">Live Preview</div>
+
+    <div class="preview-card">
+      <div class="preview-top">
+        <div class="preview-icon" id="prevIcon">💼</div>
+      </div>
+      <div class="preview-title" id="prevTitle">Your job title will appear here</div>
+      <div class="preview-poster" id="prevPoster">Your name · Location</div>
+      <div class="preview-tags" id="prevTags">
+        <span class="tag gray">Category</span>
+        <span class="tag amber">Duration</span>
+        <span class="tag gray">📍 Location</span>
+      </div>
+      <div class="preview-desc" id="prevDesc" style="display:none;"></div>
+      <div class="preview-footer">
+        <div class="preview-pay" id="prevPay">৳ — <span id="prevPayUnit">/ project</span></div>
+        <button class="btn btn-primary" style="padding:7px 16px;font-size:13px;" disabled>Apply Now</button>
+      </div>
+    </div>
+
+    <!-- Completion checklist -->
+    <div class="card" style="padding:20px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text);">Completion Checklist</div>
+      <div class="checklist">
+        <div class="check-row" id="ck-title">    <div class="ck"></div> Job title added</div>
+        <div class="check-row" id="ck-cat">      <div class="ck"></div> Category selected</div>
+        <div class="check-row" id="ck-desc">     <div class="ck"></div> Description written</div>
+        <div class="check-row" id="ck-salary">   <div class="ck"></div> Pay amount set</div>
+        <div class="check-row" id="ck-location"> <div class="ck"></div> Location added</div>
+      </div>
+      <div style="margin-top:16px;background:var(--bg);border-radius:8px;height:8px;overflow:hidden;">
+        <div id="progressBar" style="height:100%;background:var(--green);border-radius:8px;transition:width 0.3s;width:0%;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;text-align:right;"><span id="progressLabel">0</span>/5 complete</div>
+    </div>
+
+    <!-- Safety reminder -->
+    <div class="card" style="padding:20px;margin-top:14px;background:var(--amber-light);border-color:rgba(245,158,11,0.3);">
+      <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:8px;">⚠️ Employer Responsibility</div>
+      <div style="font-size:12px;color:#92400E;line-height:1.6;">
+        By posting you agree to treat teen workers fairly and with respect. Do not request inappropriate tasks. All activity is monitored by KarmoBD.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost/karmobd/backend';
+const ICONS = { 'Art':'🎨','Teaching':'📚','Photography':'📸','Tech':'💻','Delivery':'🛵','Outdoor':'🌱','Cooking':'🍳','Events':'🎤','Design':'🖥️','Music':'🎵','Cleaning':'🧹','General':'💼' };
+
+/* ── Auth Guard ────────────────────────────── */
+(function authGuard() {
+  const name = localStorage.getItem('karmo_name');
+  const role = localStorage.getItem('karmo_role');
+  const ctas = document.getElementById('navCtas');
+
+  // Not logged in at all → redirect to login
+  if (!name) {
+    sessionStorage.setItem('loginRedirect', 'post_job.html');
+    sessionStorage.setItem('loginMessage', '🔒 Please sign in as an employer to post a job.');
+    location.href = 'login.html';
+    return;
+  }
+
+  // Logged in as teen → block with message
+  if (role === 'teen') {
+    document.querySelector('.post-wrap').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:80px 20px;">
+        <div style="font-size:56px;margin-bottom:20px;">🚫</div>
+        <h2 style="font-size:22px;font-weight:800;margin-bottom:10px;">Teens Can't Post Jobs</h2>
+        <p style="color:var(--muted);font-size:15px;margin-bottom:28px;">Only employer accounts can post jobs on KarmoBD.<br>You're logged in as a <strong>teen</strong>.</p>
+        <a href="jobs.html" class="btn btn-primary btn-lg">Browse Jobs Instead →</a>
+      </div>`;
+    ctas.innerHTML = `
+      <span style="font-size:14px;color:var(--muted);">Hi, <strong style="color:var(--text);">${name}</strong></span>
+      <a href="my_applications.html" class="btn btn-primary" style="font-size:13px;">My Applications</a>
+      <a href="#" onclick="logout()" class="btn btn-outline" style="font-size:13px;">Logout</a>`;
+    return;
+  }
+
+  // Logged in as employer → show nav
+  ctas.innerHTML = `
+    <span style="font-size:14px;color:var(--muted);">Hi, <strong style="color:var(--text);">${name}</strong></span>
+    <a href="employer_dashboard.html" class="btn btn-primary" style="font-size:13px;">Dashboard</a>
+    <a href="#" onclick="logout()" class="btn btn-outline" style="font-size:13px;">Logout</a>`;
+})();
+
+function logout() {
+  fetch(API+'/logout.php', { credentials: 'include' }).finally(()=>{ localStorage.clear(); location.href='index.html'; });
+}
+
+/* ── Category picker ─────────────────────────── */
+function selectCat(btn, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('category').value = cat;
+  updatePreview();
+}
+
+/* ── Live preview updater ────────────────────── */
+function updatePreview() {
+  const title    = document.getElementById('title').value.trim();
+  const desc     = document.getElementById('description').value.trim();
+  const salary   = document.getElementById('salary').value;
+  const paytype  = document.getElementById('paytype').value;
+  const location = document.getElementById('location').value.trim();
+  const duration = document.getElementById('duration').value;
+  const category = document.getElementById('category').value;
+  const name     = localStorage.getItem('karmo_name') || 'Your Name';
+
+  // char counts
+  document.getElementById('titleCount').textContent = document.getElementById('title').value.length;
+  document.getElementById('descCount').textContent  = document.getElementById('description').value.length;
+
+  // preview
+  document.getElementById('prevTitle').textContent  = title  || 'Your job title will appear here';
+  document.getElementById('prevPoster').textContent = name + ' · ' + (location || 'Location');
+  document.getElementById('prevIcon').textContent   = ICONS[category] || '💼';
+  document.getElementById('prevPay').innerHTML      = salary ? `৳ ${Number(salary).toLocaleString()} <span id="prevPayUnit">/ ${paytype}</span>` : '৳ — <span>/ project</span>';
+
+  const tagsEl = document.getElementById('prevTags');
+  tagsEl.innerHTML = `
+    <span class="tag">${category || 'Category'}</span>
+    <span class="tag amber">${duration}</span>
+    <span class="tag gray">📍 ${location || 'Location'}</span>`;
+
+  const descEl = document.getElementById('prevDesc');
+  if (desc) { descEl.textContent = desc.length > 120 ? desc.slice(0,120)+'…' : desc; descEl.style.display = 'block'; }
+  else { descEl.style.display = 'none'; }
+
+  // checklist
+  setCheck('ck-title',    title.length > 2);
+  setCheck('ck-cat',      !!category);
+  setCheck('ck-desc',     desc.length > 20);
+  setCheck('ck-salary',   !!salary && Number(salary) > 0);
+  setCheck('ck-location', location.length > 2);
+
+  const done = ['ck-title','ck-cat','ck-desc','ck-salary','ck-location']
+    .filter(id => document.getElementById(id).classList.contains('done')).length;
+  document.getElementById('progressBar').style.width  = (done * 20) + '%';
+  document.getElementById('progressLabel').textContent = done;
+}
+
+function setCheck(id, ok) {
+  const el = document.getElementById(id);
+  el.classList.toggle('done', ok);
+  el.querySelector('.ck').textContent = ok ? '✓' : '';
+}
+
+/* ── Post job ────────────────────────────────── */
+function showAlert(msg) {
+  const el = document.getElementById('alertBox');
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function postJob() {
+  // ── Auth guard: block if not logged in ──────
+  if (!localStorage.getItem('karmo_name')) {
+    sessionStorage.setItem('loginRedirect', 'post_job.html');
+    sessionStorage.setItem('loginMessage', '🔒 Please sign in as an employer to post a job.');
+    window.location.href = 'login.html';
+    return;
+  }
+  if (localStorage.getItem('karmo_role') !== 'employer') {
+    showAlert('Only employer accounts can post jobs. Please sign in with an employer account.');
+    return;
+  }
+
+  const title    = document.getElementById('title').value.trim();
+  const category = document.getElementById('category').value;
+  const desc     = document.getElementById('description').value.trim();
+  const salary   = document.getElementById('salary').value;
+  const paytype  = document.getElementById('paytype').value;
+  const location = document.getElementById('location').value.trim();
+  const duration = document.getElementById('duration').value;
+  const phone    = document.getElementById('phone').value.trim();
+  const reqs     = document.getElementById('requirements').value.trim();
+
+  document.getElementById('alertBox').classList.remove('show');
+
+  if (!title)    return showAlert('Please enter a job title.');
+  if (!category) return showAlert('Please select a category.');
+  if (desc.length < 20) return showAlert('Please write a description of at least 20 characters.');
+  if (!salary || Number(salary) <= 0) return showAlert('Please enter a valid pay amount.');
+  if (!location) return showAlert('Please enter the job location.');
+
+  const employer_id = localStorage.getItem('karmo_id') || 0;
+
+  const btn = document.getElementById('postBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Posting…';
+
+  const fd = new FormData();
+  fd.append('title',       title);
+  fd.append('description', desc + (reqs ? '\n\nRequirements: ' + reqs : ''));
+  fd.append('salary',      salary);
+  fd.append('category',    category);
+  fd.append('location',    location);
+  fd.append('duration',    duration);
+  fd.append('phone',       phone);
+
+  fetch(API + '/post_job.php', { method:'POST', body:fd, credentials:'include' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('successScreen').classList.add('show');
+        window.scrollTo({ top:0, behavior:'smooth' });
+      } else if (data.message === 'not_logged_in') {
+        sessionStorage.setItem('loginRedirect', 'post_job.html');
+        sessionStorage.setItem('loginMessage', '🔒 Please sign in as an employer to post a job.');
+        window.location.href = 'login.html';
+      } else {
+        showAlert(data.message || 'Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = 'Post Job Now 🚀';
+      }
+    })
+    .catch(() => {
+      showAlert('Cannot connect to server. Make sure XAMPP is running.');
+      btn.disabled = false;
+      btn.innerHTML = 'Post Job Now 🚀';
+    });
+}
+
+function resetForm() {
+  ['title','description','salary','location','phone','requirements','category'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('alertBox').classList.remove('show');
+  updatePreview();
+}
+
+function postAnother() {
+  document.getElementById('formCard').style.display = 'block';
+  document.getElementById('successScreen').classList.remove('show');
+  resetForm();
+}
+</script>
+
+</body>
+</html>

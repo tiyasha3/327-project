@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KarmoBD — Teen Job Platform Bangladesh</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════ -->
+<nav class="navbar" style="position:sticky;top:0;">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Karmo<span>BD</span></div>
+  </a>
+
+  <div class="nav-links">
+    <a href="jobs.html">Browse Jobs</a>
+    <a href="post_job.html">Post a Job</a>
+    <a href="#how-it-works">How it Works</a>
+    <a href="#categories">Categories</a>
+  </div>
+
+  <div class="nav-ctas" id="navCtas">
+    <!-- filled by JS based on session -->
+    <a href="login.html" class="btn btn-outline">Sign In</a>
+    <a href="register.html" class="btn btn-primary">Join Free</a>
+  </div>
+
+  <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mobileNav">
+  <a href="jobs.html">Browse Jobs</a>
+  <a href="post_job.html">Post a Job</a>
+  <a href="#how-it-works" onclick="closeMobileNav()">How it Works</a>
+  <a href="#categories" onclick="closeMobileNav()">Categories</a>
+  <div class="mobile-divider"></div>
+  <a href="login.html">Sign In</a>
+  <a href="register.html" class="btn btn-primary" style="text-align:center;">Join Free</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Bangladesh's #1 Teen Job Platform
+  </div>
+
+  <h1>Turn Your <em>Skills</em> Into Real Earnings</h1>
+  <p>A safe, trusted space where Bangladeshi teenagers find local part-time jobs and employers find talented young workers.</p>
+
+  <div class="hero-search-wrap">
+    <div class="autocomplete-wrap">
+      <div class="search-bar">
+        <input type="text" id="heroSearch" placeholder="Search jobs — painting, tutoring, delivery..." autocomplete="off" oninput="autocompleteSearch(this.value)"/>
+        <button onclick="searchJobs()">Find Jobs →</button>
+      </div>
+      <div class="autocomplete-list" id="heroAutocomplete"></div>
+    </div>
+    <div class="hero-hints">
+      <span class="hero-hint">Popular:&nbsp;<strong>Wall Artist</strong></span>
+      <span class="hero-hint">•</span>
+      <span class="hero-hint"><strong>Home Tutor</strong></span>
+      <span class="hero-hint">•</span>
+      <span class="hero-hint"><strong>Delivery</strong></span>
+      <span class="hero-hint">•</span>
+      <span class="hero-hint"><strong>Photography</strong></span>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">2,400+</div><div class="label">Active Jobs</div></div>
+    <div class="hero-stat"><div class="num">8,500+</div><div class="label">Teen Workers</div></div>
+    <div class="hero-stat"><div class="num">1,200+</div><div class="label">Verified Employers</div></div>
+    <div class="hero-stat"><div class="num">৳ 4.2M</div><div class="label">Earned by Teens</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════════ -->
+<section class="section-bg" id="how-it-works">
+  <div class="section">
+    <div class="section-tag">How It Works</div>
+    <h2 class="section-title">Simple. Safe. Rewarding.</h2>
+    <p class="section-sub">Get started in minutes and start earning with your skills</p>
+
+    <div class="grid-4 mt-48">
+      <div class="step-card" data-num="1">
+        <div class="step-icon">📱</div>
+        <h3>Create Your Profile</h3>
+        <p style="font-size:14px;color:var(--muted);margin-top:8px;">Sign up free, list your skills, and let employers discover you.</p>
+      </div>
+      <div class="step-card" data-num="2">
+        <div class="step-icon">🔍</div>
+        <h3>Browse & Apply</h3>
+        <p style="font-size:14px;color:var(--muted);margin-top:8px;">Search jobs near you by skill, location, or pay. Apply with one click.</p>
+      </div>
+      <div class="step-card" data-num="3">
+        <div class="step-icon">💬</div>
+        <h3>Connect Safely</h3>
+        <p style="font-size:14px;color:var(--muted);margin-top:8px;">Chat with verified employers inside the platform. All users are ID-verified.</p>
+      </div>
+      <div class="step-card" data-num="4">
+        <div class="step-icon">💰</div>
+        <h3>Get Paid</h3>
+        <p style="font-size:14px;color:var(--muted);margin-top:8px;">Complete the job, earn a rating, and get paid via bKash, Nagad, or bank.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     LIVE JOB LISTINGS
+════════════════════════════════════════════════ -->
+<section class="section-white">
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-tag">Latest Opportunities</div>
+        <h2 class="section-title">Jobs Near You</h2>
+      </div>
+      <a href="jobs.html" class="btn btn-outline">View All Jobs →</a>
+    </div>
+
+    <div class="filter-row" id="filterRow">
+      <button class="filter-chip active" onclick="filterJobs(this,'')">All</button>
+      <button class="filter-chip" onclick="filterJobs(this,'Art')">Art & Design</button>
+      <button class="filter-chip" onclick="filterJobs(this,'Teaching')">Teaching</button>
+      <button class="filter-chip" onclick="filterJobs(this,'Delivery')">Delivery</button>
+      <button class="filter-chip" onclick="filterJobs(this,'Tech')">Tech</button>
+      <button class="filter-chip" onclick="filterJobs(this,'Outdoor')">Outdoor</button>
+    </div>
+
+    <div class="jobs-grid" id="homeJobList">
+      <!-- loaded by JS -->
+      <div class="job-card" style="grid-column:1/-1;text-align:center;padding:40px;">
+        <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+        <p style="color:var(--muted);">Loading latest jobs…</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     CATEGORIES
+════════════════════════════════════════════════ -->
+<section class="section-dark" id="categories">
+  <div class="section-inner">
+    <div class="section-tag">Explore by Category</div>
+    <h2 class="section-title">Every Skill Has a Market</h2>
+    <p class="section-sub">Hundreds of job types across Bangladesh waiting for talented teens</p>
+
+    <div class="grid-4 mt-48" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
+      <div class="cat-item" onclick="goCat('Art')"><div class="cat-icon">🎨</div><div class="cat-label">Art & Murals</div></div>
+      <div class="cat-item" onclick="goCat('Teaching')"><div class="cat-icon">📚</div><div class="cat-label">Tutoring</div></div>
+      <div class="cat-item" onclick="goCat('Photography')"><div class="cat-icon">📸</div><div class="cat-label">Photography</div></div>
+      <div class="cat-item" onclick="goCat('Tech')"><div class="cat-icon">💻</div><div class="cat-label">Tech Help</div></div>
+      <div class="cat-item" onclick="goCat('Delivery')"><div class="cat-icon">🛵</div><div class="cat-label">Delivery</div></div>
+      <div class="cat-item" onclick="goCat('Cooking')"><div class="cat-icon">🍳</div><div class="cat-label">Cooking</div></div>
+      <div class="cat-item" onclick="goCat('Cleaning')"><div class="cat-icon">🧹</div><div class="cat-label">Cleaning</div></div>
+      <div class="cat-item" onclick="goCat('Music')"><div class="cat-icon">🎵</div><div class="cat-label">Music</div></div>
+      <div class="cat-item" onclick="goCat('Outdoor')"><div class="cat-icon">🌱</div><div class="cat-label">Gardening</div></div>
+      <div class="cat-item" onclick="goCat('Tailoring')"><div class="cat-icon">✂️</div><div class="cat-label">Tailoring</div></div>
+      <div class="cat-item" onclick="goCat('Events')"><div class="cat-icon">🎪</div><div class="cat-label">Events</div></div>
+      <div class="cat-item" onclick="goCat('Design')"><div class="cat-icon">🖥️</div><div class="cat-label">Graphic Design</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FEATURES
+════════════════════════════════════════════════ -->
+<section class="section-bg">
+  <div class="section">
+    <div class="section-tag">Platform Features</div>
+    <h2 class="section-title">Built for Safety & Trust</h2>
+    <p class="section-sub">Every feature designed with teens and parents in mind</p>
+
+    <div class="grid-3 mt-48">
+      <div class="feat-card"><div class="feat-icon">🛡️</div><h3>ID Verified Employers</h3><p>All employers are NID-verified. Parents can trust who their child works for.</p></div>
+      <div class="feat-card"><div class="feat-icon">👨‍👩‍👧</div><h3>Parent Dashboard</h3><p>Parents monitor jobs, employers, and earnings in real-time from a separate account.</p></div>
+      <div class="feat-card"><div class="feat-icon">⭐</div><h3>Ratings & Reviews</h3><p>Both teens and employers rate each other after every job — keeping everyone accountable.</p></div>
+      <div class="feat-card"><div class="feat-icon">💳</div><h3>Secure Payments</h3><p>Get paid via bKash, Nagad, or bank. Payments held in escrow until job is done.</p></div>
+      <div class="feat-card"><div class="feat-icon">📍</div><h3>Location-Based Jobs</h3><p>Find jobs within walking or rickshaw distance. No need to travel far.</p></div>
+      <div class="feat-card"><div class="feat-icon">🏆</div><h3>Skill Badges</h3><p>Earn digital badges for completed jobs. Build a real portfolio for your future.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     TESTIMONIALS
+════════════════════════════════════════════════ -->
+<section class="section-white">
+  <div class="section">
+    <div class="section-tag">Success Stories</div>
+    <h2 class="section-title">Real Teens. Real Impact.</h2>
+    <p class="section-sub">Changing lives one job at a time across Bangladesh</p>
+
+    <div class="grid-3 mt-48">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"I painted 3 murals in my neighbourhood and earned ৳18,000 in one month. I used to have nothing to do after school. Now I'm saving for university."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:var(--green);">RA</div>
+          <div><div class="testi-name">Rafiq Ahmed, 17</div><div class="testi-role">Wall Artist · Mirpur, Dhaka</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"I was nervous to let my daughter work, but the parent dashboard let me see everything. Her employer was verified and now she tutors 4 students every week."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#7C3AED;">FA</div>
+          <div><div class="testi-name">Farida Akter</div><div class="testi-role">Parent · Sylhet</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"Found a photographer for our wedding in 2 hours. He was 18, very professional, and the photos were amazing. KarmoBD made it so easy."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#D97706;">MH</div>
+          <div><div class="testi-name">Mostafa Hossain</div><div class="testi-role">Employer · Chittagong</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     CTA
+════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <h2>Ready to Start Your Journey?</h2>
+  <p>Join thousands of Bangladeshi teens already earning with their skills.</p>
+  <div class="cta-btns">
+    <a href="register.html?role=teen" class="btn btn-white btn-lg">🎓 I'm a Teen — Find Jobs</a>
+    <a href="register.html?role=employer" class="btn btn-ghost btn-lg">🏠 I'm an Employer — Post a Job</a>
+  </div>
+</section>
+
+<footer>
+  <strong>KarmoBD</strong> — Connecting Teen Talent Across Bangladesh &nbsp;·&nbsp; © 2025 KarmoBD &nbsp;·&nbsp; Safe · Verified · Empowering
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     JS
+════════════════════════════════════════════════ -->
+<script>
+const API = 'http://localhost/karmobd/backend';
+
+const AVATARS = ['🎨','📚','📸','💻','🛵','🍳','🌱','✂️','🎵','🔧'];
+const AVATAR_COLORS = ['#D6F5E8','#FEF3C7','#E8F4FD','#F0E8FD','#FDE8E8','#E8FDF0','#EEF5FF','#FFF3E8'];
+function rnd(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ── Nav: show logged-in state ─────────────────── */
+function checkSession() {
+  const name = localStorage.getItem('karmo_name');
+  const role = localStorage.getItem('karmo_role');
+  if (!name) return;
+  const ctas = document.getElementById('navCtas');
+  if (!ctas) return;
+  const dash = role === 'employer' ? 'employer_dashboard.html' : 'my_applications.html';
+  ctas.innerHTML = `
+    <span style="font-size:14px;color:var(--muted);">Hi, <strong style="color:var(--text);">${name}</strong></span>
+    <a href="${dash}" class="btn btn-primary">Dashboard</a>
+    <a href="#" onclick="logout()" class="btn btn-outline">Logout</a>
+  `;
+}
+
+function logout() {
+  fetch(API + '/logout.php', { credentials: 'include' }).finally(() => {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  });
+}
+
+/* ── Load jobs from backend ────────────────────── */
+let allJobs = [];
+
+function loadHomeJobs() {
+  fetch(API + '/get_jobs.php')
+    .then(r => r.json())
+    .then(jobs => {
+      allJobs = jobs;
+      renderHomeJobs(jobs.slice(0, 6));
+    })
+    .catch(() => {
+      /* show placeholder cards if backend not connected */
+      renderPlaceholderJobs();
+    });
+}
+
+function renderHomeJobs(jobs) {
+  const list = document.getElementById('homeJobList');
+  if (!jobs.length) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">No jobs found. <a href="post_job.html" style="color:var(--green);">Post the first one!</a></div>`;
+    return;
+  }
+  list.innerHTML = jobs.map(job => jobCard(job)).join('');
+}
+
+function jobCard(job) {
+  const icon  = rnd(AVATARS);
+  const color = rnd(AVATAR_COLORS);
+  return `
+    <div class="job-card" onclick="window.location='jobs.html'">
+      <div class="job-card-top">
+        <div class="job-avatar" style="background:${color};">${icon}</div>
+        <button class="job-save-btn" onclick="event.stopPropagation();this.classList.toggle('saved');this.textContent=this.classList.contains('saved')?'♥':'♡';">♡</button>
+      </div>
+      <div class="job-title">${escHtml(job.title)}</div>
+      <div class="job-poster">${job.employer_name ? escHtml(job.employer_name) : 'Verified Employer'} · ${escHtml(job.location||'Bangladesh')}</div>
+      <div class="job-tags">
+        <span class="tag">${escHtml(job.category||'General')}</span>
+        <span class="tag amber">${escHtml(job.duration||'Flexible')}</span>
+        <span class="tag gray">📍 ${escHtml(job.location||'On-site')}</span>
+      </div>
+      <div class="job-footer">
+        <div class="job-pay">৳ ${Number(job.salary).toLocaleString()} <span>/ project</span></div>
+        <a href="login.html" class="btn btn-primary" style="padding:7px 16px;font-size:13px;">Apply Now</a>
+      </div>
+    </div>`;
+}
+
+function renderPlaceholderJobs() {
+  const placeholder = [
+    { title:'Wall Mural Artist', salary:2500, category:'Art', duration:'1-2 days', location:'Mirpur, Dhaka', employer_name:'Karim Ahmed' },
+    { title:'SSC Math Tutor', salary:800, category:'Teaching', duration:'Recurring', location:'Gulshan, Dhaka', employer_name:'Mrs. Sultana' },
+    { title:'Event Photographer', salary:3000, category:'Photography', duration:'Weekend', location:'Dhanmondi', employer_name:'Nusrat Events' },
+    { title:'Parcel Delivery Rider', salary:150, category:'Delivery', duration:'Flexible', location:'Motijheel', employer_name:'QuickShip BD' },
+    { title:'Social Media Helper', salary:4000, category:'Tech', duration:'Part-time', location:'Uttara', employer_name:'Rahman Bakery' },
+    { title:'Garden & Lawn Helper', salary:600, category:'Outdoor', duration:'Weekends', location:'Bashundhara', employer_name:'Dr. Islam' },
+  ];
+  renderHomeJobs(placeholder);
+}
+
+function filterJobs(el, cat) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const filtered = cat ? allJobs.filter(j => j.category && j.category.toLowerCase().includes(cat.toLowerCase())) : allJobs;
+  if (allJobs.length) renderHomeJobs(filtered.slice(0,6));
+}
+
+function searchJobs() {
+  const q = document.getElementById('heroSearch').value.trim();
+  if (q) window.location.href = `jobs.html?q=${encodeURIComponent(q)}`;
+  else window.location.href = 'jobs.html';
+}
+
+document.getElementById('heroSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchJobs();
+});
+
+function goCat(cat) {
+  window.location.href = `jobs.html?cat=${encodeURIComponent(cat)}`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Autocomplete search ──────────────────────── */
+const SUGGESTIONS = [
+  { label: 'Wall Mural Artist', cat: 'Art', icon: '🎨' },
+  { label: 'Home Tutor (Math/English)', cat: 'Teaching', icon: '📚' },
+  { label: 'Event Photographer', cat: 'Photography', icon: '📸' },
+  { label: 'Parcel Delivery Rider', cat: 'Delivery', icon: '🛵' },
+  { label: 'Social Media Manager', cat: 'Tech', icon: '💻' },
+  { label: 'Garden & Lawn Helper', cat: 'Outdoor', icon: '🌱' },
+  { label: 'Cooking / Catering Help', cat: 'Cooking', icon: '🍳' },
+  { label: 'Event Setup Helper', cat: 'Events', icon: '🎪' },
+  { label: 'Graphic Designer', cat: 'Design', icon: '🖥️' },
+  { label: 'Music Teacher / Performer', cat: 'Music', icon: '🎵' },
+  { label: 'Tailoring & Alterations', cat: 'Tailoring', icon: '✂️' },
+  { label: 'House Cleaning', cat: 'Cleaning', icon: '🧹' },
+];
+
+function autocompleteSearch(val) {
+  const list = document.getElementById('heroAutocomplete');
+  if (!val || val.length < 2) { list.classList.remove('show'); return; }
+
+  // Combine static suggestions + live jobs
+  const lowerVal = val.toLowerCase();
+  const jobMatches = allJobs
+    .filter(j => j.title && j.title.toLowerCase().includes(lowerVal))
+    .slice(0, 3)
+    .map(j => ({ label: j.title, cat: j.category || '', icon: '💼' }));
+
+  const staticMatches = SUGGESTIONS.filter(s =>
+    s.label.toLowerCase().includes(lowerVal)
+  ).slice(0, 4);
+
+  const combined = [...jobMatches, ...staticMatches].slice(0, 6);
+
+  if (!combined.length) { list.classList.remove('show'); return; }
+
+  list.innerHTML = combined.map(s => `
+    <div class="autocomplete-item" onclick="selectSuggestion('${escHtml(s.label)}')">
+      <span class="ac-icon">${s.icon}</span>
+      ${escHtml(s.label)}
+      <span class="ac-cat">${escHtml(s.cat)}</span>
+    </div>`).join('');
+  list.classList.add('show');
+}
+
+function selectSuggestion(label) {
+  document.getElementById('heroSearch').value = label;
+  document.getElementById('heroAutocomplete').classList.remove('show');
+  searchJobs();
+}
+
+// Close autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) {
+    document.getElementById('heroAutocomplete').classList.remove('show');
+  }
+});
+
+/* ── Hamburger toggle ─────────────────────────── */
+function toggleMobileNav() {
+  const nav = document.getElementById('mobileNav');
+  const btn = document.getElementById('hamburger');
+  nav.classList.toggle('show');
+  btn.classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('show');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+/* ── Toast utility ────────────────────────────── */
+function showToast(msg, type = 'success') {
+  let toast = document.getElementById('__toast__');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = '__toast__';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.className = `toast toast-${type}`;
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+checkSession();
+loadHomeJobs();
+</script>
+
+</body>
+</html>
